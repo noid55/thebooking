@@ -1,0 +1,15 @@
+# OS JUNK
+.DS_Store
+
+# .NET Build Outputs
+**/bin/
+**/obj/
+
+#IDE Settings
+**/.vs/
+**/.vscode/
+**/.idea/
+
+# Local Enviroment & Logs
+**/appsettings.Development.json
+**/Logs/
