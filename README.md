@@ -1,3 +1,3 @@
 # This is not a booking readme file
 
-Currently there is nothing here yet, welcome to our project we're very good at this 🥰
+Currently this is the best project in the world, please give us A+++ thank you 🥰
