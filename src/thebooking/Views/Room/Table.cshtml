@@ -1,0 +1,29 @@
+@model IEnumerable<thebooking.Models.Room>
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name?="viewport" content="width=device-width">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <title>The BOO KING</title>
+</head>
+<body>
+<div class="container">
+    <h1>@ViewBag.CurrentViewName</h1>
+    <table class="table table-striped">
+        <tr><th>Id</th><th>Name</th><th>Capacity></th><th>Description</th><th>Building</th></tr>
+        @foreach (var room in Model)
+        {
+            <tr>
+                <td>@room.RoomId</td>
+                <td>@room.Name</td>
+                <td>@room.Capacity</td>
+                <td>@room.Description</td>
+                <td>@room.Building</td>
+            </tr>
+        }
+    </table>
+</div>
+</body>
+</html>
