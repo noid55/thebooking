@@ -3,6 +3,14 @@
 Currently this is the best project in the world, please give us A+++ thank you 🥰
 
 
+## Kjøring av webappen
+Naviger til folder ```cd C:\Skole\Webapp\thebooking\src\thebooking```
+
+Kjør kommando ```dotnet watch```
+Eller ```dotnet run```
+
+Naviger til ```http://localhost:5190/Room/table``` i nettleser
+
 ## thebooking.slnx
 Kjørt samtaler med AI ift å bygge prosjektstruktur, og den sier at det er kjekt å ha en solution fil (.slnx). 
 Den gir prosjektet en slaks oversikt over hvilke løsninger som er implementert, usikker på hvor nødvendig det er for våres prosjekt men vi ser an. 
