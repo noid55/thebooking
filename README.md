@@ -3,6 +3,17 @@
 Currently this is the best project in the world, please give us A+++ thank you 🥰
 
 
+## thebooking.slnx
+Kjørt samtaler med AI ift å bygge prosjektstruktur, og den sier at det er kjekt å ha en solution fil (.slnx). 
+Den gir prosjektet en slaks oversikt over hvilke løsninger som er implementert, usikker på hvor nødvendig det er for våres prosjekt men vi ser an. 
+Legg til forskjellige solution filer med f.eks:
+
+```dotnet sln thebooking.slnx add src/thebooking/thebooking.csproj``` 
+
+Se om løsningen er lagt til filen riktig med: 
+```dotnet sln thebooking.slnx list```
+
+
 # Frontend notater
 
 Features: 
