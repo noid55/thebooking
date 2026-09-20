@@ -16,7 +16,7 @@ Nå har vi også en Homepage, så man kan navigere seg rundt på webapplikasjone
 ## Home page og shared view 
 Under [thebooking/src/thebooking/Views/shared/_Layout.cshtml](./src/thebooking/Views/Shared/_Layout.cshtml) ligger _layout.cshtml filen. 
 Her lagres et felles shared layout, aner ikke hvordan det funker. 
-Jeg tror at den setter inn det samme layoutet på alle sidene, og i _Layout.cshtml har den kode som bare viser en vilkårlig view basert på hvilken side man velger
+Jeg tror at den setter inn det samme layoutet på alle sidene, og i _Layout.cshtml har den kode som bare viser en vilkårlig view basert på hvilken side man velger.
 Men det gir oss hvertfall en navbar som dukker opp på alle de forksjellige sidene av applikasjonen.
 Vi har også laget en "Home" page som er default når applikasjonen starter (altså den vises på root directory ```http://localhost:5190``). 
 
