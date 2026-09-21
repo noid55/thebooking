@@ -5,8 +5,18 @@ namespace thebooking.Controllers;
 
 public class RoomController : Controller
 {
+    private readonly BookingDbContext _bookingDbContext;
+    public RoomController(BookingDbContext bookingDbContext)
+{
+    _bookingDbContext = bookingDbContext;
+}
     public IActionResult Table()
-    {
+    { 
+        List<Room> rooms = _bookingDbContext.Rooms.ToList();
+        
+        ViewBag.CurrentViewName = "List of Rooms";
+        return View(rooms);
+        /*
         var rooms = new List<Room>();
         var room1 = new Room();
         room1.RoomId = 1;
@@ -29,8 +39,8 @@ public class RoomController : Controller
         rooms.Add(room1);
         rooms.Add(room2);
         rooms.Add(room3);
+        */
 
-        ViewBag.CurrentViewName = "List of Rooms";
-        return View(rooms);
+     
     }
 }
