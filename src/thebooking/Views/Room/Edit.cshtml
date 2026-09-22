@@ -1,0 +1,30 @@
+@model Room
+
+<h2>Edit Room</h2>
+
+<form asp-action="Edit">
+    <input type="hidden" asp-for="RoomId" />
+    <div class="form-group">
+        <label asp-for="Name"></label><span class="text-danger">*</span>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Capacity"></label><span class="text-danger">*</span>
+        <input asp-for="Capacity" class="form-control" />
+        <span asp-validation-for="Capacity" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Building"></label><span class="text-danger">*</span>
+        <input asp-for="Building" class="form-control" />
+        <span asp-validation-for="Building" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Description"></label>
+        <input asp-for="Description" class="form-control" />
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Table" class="btn btn-secondary">Cancel</a>
+</form>

@@ -11,6 +11,7 @@
 <body>
 <div class="container">
     <h1>@ViewBag.CurrentViewName</h1>
+    <a asp-controller="Room" asp-action="Create" class="btn btn-primary">Create new room</a>
     <table class="table table-striped">
         <tr><th>Id</th><th>Name</th><th>Capacity</th><th>Description</th><th>Building</th></tr>
         @foreach (var room in Model)
@@ -21,6 +22,11 @@
                 <td>@room.Capacity</td>
                 <td>@room.Description</td>
                 <td>@room.Building</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@room.RoomId" class="btn btn-primary btn-sm">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@room.RoomId" class="btn btn-danger btn-sm">Delete</a>
+                
+                </td>
             </tr>
         }
     </table>

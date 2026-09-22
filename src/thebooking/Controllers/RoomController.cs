@@ -43,4 +43,71 @@ public class RoomController : Controller
 
      
     }
+[HttpGet]
+public IActionResult Create()
+    {
+        return View();
+    }
+[HttpPost]
+public IActionResult Create(Room room)
+    {
+        if (ModelState.IsValid){
+            
+            _bookingDbContext.Rooms.Add(room);
+            _bookingDbContext.SaveChanges();
+            return RedirectToAction(nameof(Table));
+        }
+        return View(room);
+
+    }
+
+[HttpGet]
+public IActionResult Edit(int id)
+    {
+        var room = _bookingDbContext.Rooms.Find(id);
+        if (room == null)
+        {
+            return NotFound();
+        }
+        return View(room);
+    }
+[HttpPost]
+public IActionResult Edit(int id, Room room)
+{ 
+    if (id != room.RoomId)
+        {
+            return NotFound();
+        }
+    if (ModelState.IsValid)
+        {
+            _bookingDbContext.Rooms.Update(room);
+            _bookingDbContext.SaveChanges();
+            return RedirectToAction(nameof(Table));
+        }
+        return View(room);
+    }
+
+[HttpGet]
+public IActionResult Delete(int id)
+{
+   var room = _bookingDbContext.Rooms.Find(id);
+    if (room == null)
+    {
+        return NotFound();
+    }
+    return View(room);
+}
+
+[HttpPost]
+public IActionResult DeleteConfirmed(int id)
+{
+    var room = _bookingDbContext.Rooms.Find(id);
+    if (room == null)
+        {
+            return NotFound();
+        }
+        _bookingDbContext.Rooms.Remove(room);
+        _bookingDbContext.SaveChanges();
+        return RedirectToAction(nameof(Table));
+}
 }
