@@ -43,6 +43,17 @@ public class RoomController : Controller
 
      
     }
+
+    public IActionResult Details(int id)
+    {
+        List<Room> rooms = _bookingDbContext.Rooms.ToList();
+        var room = rooms.FirstOrDefault(i => i.RoomId == id);
+        if (room == null)
+        {
+            return NotFound();
+        }
+        return View(room);
+    }
 [HttpGet]
 public IActionResult Create()
     {
