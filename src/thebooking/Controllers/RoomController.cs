@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using thebooking.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace thebooking.Controllers;
 
@@ -10,10 +11,9 @@ public class RoomController : Controller
 {
     _bookingDbContext = bookingDbContext;
 }
-    public IActionResult Table()
+    public async Task<IActionResult> Table()
     { 
-        List<Room> rooms = _bookingDbContext.Rooms.ToList();
-        
+        List<Room> rooms = await _bookingDbContext.Rooms.ToListAsync();
         ViewBag.CurrentViewName = "List of Rooms";
         return View(rooms);
         /*
@@ -44,10 +44,9 @@ public class RoomController : Controller
      
     }
 
-    public IActionResult Details(int id)
+    public async Task<IActionResult> Details(int id)
     {
-        List<Room> rooms = _bookingDbContext.Rooms.ToList();
-        var room = rooms.FirstOrDefault(i => i.RoomId == id);
+        var room = await _bookingDbContext.Rooms.FirstOrDefaultAsync(i => i.RoomId == id);
         if (room == null)
         {
             return NotFound();
@@ -60,12 +59,12 @@ public IActionResult Create()
         return View();
     }
 [HttpPost]
-public IActionResult Create(Room room)
+public async Task<IActionResult> Create(Room room)
     {
         if (ModelState.IsValid){
             
             _bookingDbContext.Rooms.Add(room);
-            _bookingDbContext.SaveChanges();
+            await _bookingDbContext.SaveChangesAsync();
             return RedirectToAction(nameof(Table));
         }
         return View(room);
@@ -73,9 +72,9 @@ public IActionResult Create(Room room)
     }
 
 [HttpGet]
-public IActionResult Edit(int id)
+public async Task<IActionResult> Edit(int id)
     {
-        var room = _bookingDbContext.Rooms.Find(id);
+        var room = await _bookingDbContext.Rooms.FindAsync(id);
         if (room == null)
         {
             return NotFound();
@@ -83,7 +82,7 @@ public IActionResult Edit(int id)
         return View(room);
     }
 [HttpPost]
-public IActionResult Edit(int id, Room room)
+public async Task<IActionResult> Edit(int id, Room room)
 { 
     if (id != room.RoomId)
         {
@@ -92,16 +91,16 @@ public IActionResult Edit(int id, Room room)
     if (ModelState.IsValid)
         {
             _bookingDbContext.Rooms.Update(room);
-            _bookingDbContext.SaveChanges();
+            await _bookingDbContext.SaveChangesAsync();
             return RedirectToAction(nameof(Table));
         }
         return View(room);
     }
 
 [HttpGet]
-public IActionResult Delete(int id)
+public async Task<IActionResult> Delete(int id)
 {
-   var room = _bookingDbContext.Rooms.Find(id);
+   var room = await _bookingDbContext.Rooms.FindAsync(id);
     if (room == null)
     {
         return NotFound();
@@ -110,15 +109,15 @@ public IActionResult Delete(int id)
 }
 
 [HttpPost]
-public IActionResult DeleteConfirmed(int id)
+public async Task<IActionResult> DeleteConfirmed(int id)
 {
-    var room = _bookingDbContext.Rooms.Find(id);
+    var room = await _bookingDbContext.Rooms.FindAsync(id);
     if (room == null)
         {
             return NotFound();
         }
         _bookingDbContext.Rooms.Remove(room);
-        _bookingDbContext.SaveChanges();
+        await _bookingDbContext.SaveChangesAsync();
         return RedirectToAction(nameof(Table));
 }
 }
