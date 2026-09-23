@@ -2,8 +2,10 @@ const HomePage = () => {
   return (
     <div className="text-center">
       <h1 className="display-4">Room booking</h1>
-    </div>
-  );
+        
+
+    </div>);
 };
+
 
 export default HomePage;
