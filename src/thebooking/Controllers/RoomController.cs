@@ -100,7 +100,10 @@ public async Task<IActionResult> Edit(int id, Room room)
 [HttpGet]
 public async Task<IActionResult> Delete(int id)
 {
-   var room = await _bookingDbContext.Rooms.FindAsync(id);
+   var room = await _bookingDbContext.Rooms
+
+
+   .FirstOrDefaultAsync(r => r.RoomId == id);
     if (room == null)
     {
         return NotFound();
@@ -118,6 +121,7 @@ public async Task<IActionResult> DeleteConfirmed(int id)
         }
         _bookingDbContext.Rooms.Remove(room);
         await _bookingDbContext.SaveChangesAsync();
-        return RedirectToAction(nameof(Table));
+   
+     return RedirectToAction(nameof(Table));
 }
 }
