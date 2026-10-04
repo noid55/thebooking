@@ -13,3 +13,8 @@
 # Local Enviroment & Logs
 **/appsettings.Development.json
 **/Logs/
+
+# SQLite database
+*.db
+*.db-shm
+*.db-wal
