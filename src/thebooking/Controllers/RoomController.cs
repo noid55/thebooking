@@ -5,8 +5,18 @@ namespace thebooking.Controllers;
 
 public class RoomController : Controller
 {
+    private readonly ILogger<RoomController> _logger;
+    
+    public RoomController(ILogger<RoomController> logger)
+    {
+        _logger = logger;
+    }
     public IActionResult Table()
     {
+        _logger.LogInformation("The study room table was accessed."); 
+        _logger.LogWarning("This is a warning message."); 
+        _logger.LogError("This is an error message.");
+        
         var rooms = new List<Room>();
         var room1 = new Room();
         room1.RoomId = 1;
@@ -33,4 +43,6 @@ public class RoomController : Controller
         ViewBag.CurrentViewName = "List of Rooms";
         return View(rooms);
     }
+
+    
 }

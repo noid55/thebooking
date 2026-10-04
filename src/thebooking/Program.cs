@@ -1,5 +1,18 @@
+using Serilog;
+
+var logFileName = $"Logs/app_{DateTime.Now:yyyyMMdd_HHmmss}.log";
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddSerilog((service, loggerConfiguration) =>
+{
+    loggerConfiguration
+        .MinimumLevel.Debug()
+        .WriteTo.Console()
+        .WriteTo.File(logFileName);
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
