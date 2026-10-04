@@ -1,7 +1,7 @@
 @model Room
 
 <h2>Edit Room</h2>
-
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 <form asp-action="Edit">
     <input type="hidden" asp-for="RoomId" />
     <div class="form-group">

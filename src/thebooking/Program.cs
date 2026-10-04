@@ -1,9 +1,9 @@
-using Serilog;
 using Microsoft.EntityFrameworkCore;
 using thebooking.Models;
+using Serilog;
+using Serilog.Events;
 
 var logFileName = $"Logs/app_{DateTime.Now:yyyyMMdd_HHmmss}.log";
-
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
@@ -11,9 +11,13 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSerilog((service, loggerConfiguration) =>
 {
     loggerConfiguration
-        .MinimumLevel.Debug()
+        .MinimumLevel.Information()
         .WriteTo.Console()
-        .WriteTo.File(logFileName);
+        .WriteTo.File(logFileName)
+        .Filter.ByExcluding
+            (e => e.Properties.TryGetValue("SourceContext", out var value) &&
+            e.Level == LogEventLevel.Information &&
+            e.MessageTemplate.Text.Contains("Executed DbCommand"));
 });
     builder.Services.AddDbContext<BookingDbContext>(options =>
     {
