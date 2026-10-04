@@ -7,16 +7,12 @@ namespace thebooking.Controllers;
 public class RoomController : Controller
 {
     private readonly ILogger<RoomController> _logger;
-    
-    public RoomController(ILogger<RoomController> logger)
-    {
-        _logger = logger;
-    }
     private readonly BookingDbContext _bookingDbContext;
 
-    public RoomController(BookingDbContext bookingDbContext)
+    public RoomController(BookingDbContext bookingDbContext, ILogger<RoomController> logger)
     {
         _bookingDbContext = bookingDbContext;
+        _logger = logger;
     }
 
     public async Task<IActionResult> Table()
