@@ -1,9 +1,18 @@
+using Serilog;
+
+var logFileName = $"Logs/app_{DateTime.Now:yyyyMMdd_HHmmss}.log";
 using Microsoft.EntityFrameworkCore;
 using thebooking.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddSerilog((service, loggerConfiguration) =>
+{
+    loggerConfiguration
+        .MinimumLevel.Debug()
+        .WriteTo.Console()
+        .WriteTo.File(logFileName);
 builder.Services.AddDbContext<BookingDbContext>(options =>
 {
     options.UseSqlite(builder.Configuration["ConnectionStrings:BookingDbContextConnection"]);
