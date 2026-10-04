@@ -29,6 +29,7 @@ public class RoomController : Controller
         var room = await _bookingDbContext.Rooms.FirstOrDefaultAsync(i => i.RoomId == id);
         if (room == null)
         {
+            _logger.LogWarning("Room " + id + " was not found.");
             return NotFound();
         }
 
@@ -55,7 +56,7 @@ public class RoomController : Controller
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "An error occurred while creating booking for room " + room.RoomId + ".");
+            _logger.LogError(e, "An error occurred while creating booking for room {RoomId}.", room.RoomId);
             ModelState.AddModelError(string.Empty, "An error occurred while creating booking for room " + room.RoomId + ". Please try again later."); 
         }
 
@@ -68,6 +69,7 @@ public class RoomController : Controller
         var room = await _bookingDbContext.Rooms.FindAsync(id);
         if (room == null)
         {
+            _logger.LogWarning("Room {RoomId} was not found.", id);
             return NotFound();
         }
 
@@ -79,6 +81,7 @@ public class RoomController : Controller
     {
         if (id != room.RoomId)
         {
+            _logger.LogWarning("Room ID mismatch. Route ID: {RoomId}, Room ID: {RoomId}", id, room.RoomId);
             return NotFound();
         }
 
@@ -93,7 +96,7 @@ public class RoomController : Controller
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "An error occurred while editing room booking " + room.RoomId + ".");
+                _logger.LogError(e, "An error occurred while editing room booking {RoomId}.", room.RoomId);
                 ModelState.AddModelError(string.Empty, "An error occurred while editing booking for room " + room.RoomId + ". Please try again later."); 
             }
         }
@@ -108,6 +111,7 @@ public class RoomController : Controller
             .FirstOrDefaultAsync(r => r.RoomId == id);
         if (room == null)
         {
+            _logger.LogWarning("Room " + id + " was not found.");
             return NotFound();
         }
 
@@ -120,6 +124,7 @@ public class RoomController : Controller
         var room = await _bookingDbContext.Rooms.FindAsync(id);
         if (room == null)
         {
+            _logger.LogWarning("Room " + id + " was not found.");
             return NotFound();
         }
 
@@ -130,7 +135,7 @@ public class RoomController : Controller
         } 
         catch (Exception e)
         {
-            _logger.LogError(e, "An error occurred while deleting room booking " + room.RoomId + ".");
+            _logger.LogError(e, "An error occurred while deleting room booking {RoomId}.", room.RoomId);
             ModelState.AddModelError(string.Empty, "An error occurred while trying to delete booking for room " + room.RoomId + ". Please try again later."); 
             return View("Delete", room); 
         }

@@ -57,3 +57,21 @@ Features:
 Grensesnitt å ta inspirasjon fra (Read: Straight up kopier dette)
 https://booking.oslo.kommune.no/?loanType=singleLoan&purposes=&date=2026-09-16&datePicker1=2026-09-16&duration=PT1H&searchType=list
 ![img_1.png](img_1.png)
+
+# Logging og feilhåndtering
+
+Lagt til logging i ```RoomController```, bruker ```ILogger<RoomController>```.
+- ```ILogger<RoomController>``` logger det som skjer i ```RoomController```.
+- Serilog er satt opp i ```Program.cs```.
+- Logfører til konsollen og [thebooking/src/thebooking/Logs](./src/thebooking/Logs), filene får tidsstempel og dato.
+
+Loggnivå
+- ```LogInformation``` brukes for vanlige ting som skjer, for eksempel når Room-tabellen blir åpnet.
+- ```LogWarning``` brukes når et rom ikke blir funnet, altså når vi returnerer NotFound().
+- ```LogError``` brukes hvis det oppstår en exception.
+
+Feilhåndtering
+
+```try/catch``` rundt ```SaveChangesAsync()``` i ```Create```,```Edit``` og ```Delete```
+
+Feil i databasen blir logget med ```LogError``` Applikasjonen gir feilmelding istedet for å krasje.
