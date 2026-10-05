@@ -75,3 +75,15 @@ Feilhåndtering
 ```try/catch``` rundt ```SaveChangesAsync()``` i ```Create```,```Edit``` og ```Delete```
 
 Feil i databasen blir logget med ```LogError``` Applikasjonen gir feilmelding istedet for å krasje.
+
+
+## Stock pictures for rooms
+
+room1 - https://www.google.com/imgres?q=meeting%20room%20pictures&imgurl=https%3A%2F%2Fimages.rawpixel.com%2Fimage_800%2FcHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIyLTA1L3Vwd2s2MTg0NjIwMi13aWtpbWVkaWEtaW1hZ2Uta293Yzh4ZGguanBn.jpg&imgrefurl=https%3A%2F%2Fwww.rawpixel.com%2Fsearch%2Fconference%2520room&docid=mm0Xr02X4xIiRM&tbnid=L32jbCMhGlm0aM&vet=12ahUKEwiUuO_w3KKXAxWEIhAIHQHwG9QQnPAOegQISxAA..i&w=800&h=534&hcb=2&ved=2ahUKEwiUuO_w3KKXAxWEIhAIHQHwG9QQnPAOegQISxAA
+https://www.rawpixel.com/image/3284690/free-photo-image-office-living-room-interior-design
+
+room2 - https://www.stockvault.net/photo/185428/business-meeting-room
+
+room3 - https://freerangestock.com/photo/132767/empty-conference-room
+
+
