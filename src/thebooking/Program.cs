@@ -15,27 +15,28 @@ builder.Services.AddSerilog((service, loggerConfiguration) =>
         .WriteTo.Console()
         .WriteTo.File(logFileName)
         .Filter.ByExcluding
-            (e => e.Properties.TryGetValue("SourceContext", out var value) &&
-            e.Level == LogEventLevel.Information &&
-            e.MessageTemplate.Text.Contains("Executed DbCommand"));
+        (e => e.Properties.TryGetValue("SourceContext", out var value) &&
+              e.Level == LogEventLevel.Information &&
+              e.MessageTemplate.Text.Contains("Executed DbCommand"));
 });
-    builder.Services.AddDbContext<BookingDbContext>(options =>
-    {
-        options.UseSqlite(builder.Configuration["ConnectionStrings:BookingDbContextConnection"]);
-    });
+builder.Services.AddDbContext<BookingDbContext>(options =>
+{
+    options.UseSqlite(builder.Configuration["ConnectionStrings:BookingDbContextConnection"]);
+});
 
-    var app = builder.Build();
-
+var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
- var db = scope.ServiceProvider.GetRequiredService<BookingDbContext>();
-
-db.Database.Migrate();
+    var db = scope.ServiceProvider.GetRequiredService<BookingDbContext>();
+    db.Database.Migrate();
 }
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseDeveloperExceptionPage();
-    }
 
-    app.MapDefaultControllerRoute();
-    app.Run();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+
+app.MapStaticAssets();
+app.MapDefaultControllerRoute();
+app.Run();
