@@ -29,6 +29,7 @@ public class RoomController : Controller
         var room = await _bookingDbContext.Rooms.FirstOrDefaultAsync(i => i.RoomId == id);
         if (room == null)
         {
+            _logger.LogWarning("Room " + id + " was not found.");
             return NotFound();
         }
 
@@ -44,11 +45,19 @@ public class RoomController : Controller
     [HttpPost]
     public async Task<IActionResult> Create(Room room)
     {
-        if (ModelState.IsValid)
+        try
         {
-            _bookingDbContext.Rooms.Add(room);
-            await _bookingDbContext.SaveChangesAsync();
-            return RedirectToAction(nameof(Table));
+            if (ModelState.IsValid)
+            {
+                _bookingDbContext.Rooms.Add(room);
+                await _bookingDbContext.SaveChangesAsync();
+                return RedirectToAction(nameof(Table));
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "An error occurred while creating booking for room {RoomId}.", room.RoomId);
+            ModelState.AddModelError(string.Empty, "An error occurred while creating booking for room " + room.RoomId + ". Please try again later."); 
         }
 
         return View(room);
@@ -60,6 +69,7 @@ public class RoomController : Controller
         var room = await _bookingDbContext.Rooms.FindAsync(id);
         if (room == null)
         {
+            _logger.LogWarning("Room {RoomId} was not found.", id);
             return NotFound();
         }
 
@@ -71,14 +81,24 @@ public class RoomController : Controller
     {
         if (id != room.RoomId)
         {
+            _logger.LogWarning("Room ID mismatch. Route ID: {RoomId}, Room ID: {RoomId}", id, room.RoomId);
             return NotFound();
         }
 
         if (ModelState.IsValid)
         {
-            _bookingDbContext.Rooms.Update(room);
-            await _bookingDbContext.SaveChangesAsync();
-            return RedirectToAction(nameof(Table));
+            try
+            {
+                _bookingDbContext.Rooms.Update(room);
+                await _bookingDbContext.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Table));
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "An error occurred while editing room booking {RoomId}.", room.RoomId);
+                ModelState.AddModelError(string.Empty, "An error occurred while editing booking for room " + room.RoomId + ". Please try again later."); 
+            }
         }
 
         return View(room);
@@ -91,6 +111,7 @@ public class RoomController : Controller
             .FirstOrDefaultAsync(r => r.RoomId == id);
         if (room == null)
         {
+            _logger.LogWarning("Room " + id + " was not found.");
             return NotFound();
         }
 
@@ -103,12 +124,21 @@ public class RoomController : Controller
         var room = await _bookingDbContext.Rooms.FindAsync(id);
         if (room == null)
         {
+            _logger.LogWarning("Room " + id + " was not found.");
             return NotFound();
         }
 
-        _bookingDbContext.Rooms.Remove(room);
-        await _bookingDbContext.SaveChangesAsync();
-
+        try
+        {
+            _bookingDbContext.Rooms.Remove(room);
+            await _bookingDbContext.SaveChangesAsync();
+        } 
+        catch (Exception e)
+        {
+            _logger.LogError(e, "An error occurred while deleting room booking {RoomId}.", room.RoomId);
+            ModelState.AddModelError(string.Empty, "An error occurred while trying to delete booking for room " + room.RoomId + ". Please try again later."); 
+            return View("Delete", room); 
+        }
         return RedirectToAction(nameof(Table));
     }
 }
