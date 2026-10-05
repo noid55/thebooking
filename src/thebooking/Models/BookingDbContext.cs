@@ -6,7 +6,7 @@ public class BookingDbContext : DbContext
 {
     public BookingDbContext(DbContextOptions<BookingDbContext> options) : base(options)
     {
-       Database.EnsureCreated();
+       
     }
     public DbSet<Room> Rooms { get; set; }
     public DbSet<Booking> Bookings { get; set; }
