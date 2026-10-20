@@ -16,7 +16,7 @@ namespace thebooking.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Proxies:ChangeTracking", false)
                 .HasAnnotation("Proxies:CheckEquality", false)
                 .HasAnnotation("Proxies:LazyLoading", true);
@@ -26,10 +26,6 @@ namespace thebooking.Migrations
                     b.Property<int>("BookingId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("BookedBy")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -43,7 +39,15 @@ namespace thebooking.Migrations
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Topic")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -54,20 +58,55 @@ namespace thebooking.Migrations
                     b.ToTable("Bookings");
                 });
 
+            modelBuilder.Entity("thebooking.Models.Building", b =>
+                {
+                    b.Property<int>("BuildingId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("BuildingId");
+
+                    b.ToTable("Buildings");
+                });
+
+            modelBuilder.Entity("thebooking.Models.Equipment", b =>
+                {
+                    b.Property<int>("EquipmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("EquipmentId");
+
+                    b.ToTable("Equipment");
+                });
+
             modelBuilder.Entity("thebooking.Models.Room", b =>
                 {
                     b.Property<int>("RoomId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Building")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<int>("BuildingId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Capacity")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Description")
+                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -76,7 +115,31 @@ namespace thebooking.Migrations
 
                     b.HasKey("RoomId");
 
+                    b.HasIndex("BuildingId");
+
                     b.ToTable("Rooms");
+                });
+
+            modelBuilder.Entity("thebooking.Models.RoomEquipment", b =>
+                {
+                    b.Property<int>("RoomEquipmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("EquipmentId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RoomId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("RoomEquipmentId");
+
+                    b.HasIndex("EquipmentId");
+
+                    b.HasIndex("RoomId", "EquipmentId")
+                        .IsUnique();
+
+                    b.ToTable("RoomEquipments");
                 });
 
             modelBuilder.Entity("thebooking.Models.Booking", b =>
@@ -92,7 +155,49 @@ namespace thebooking.Migrations
 
             modelBuilder.Entity("thebooking.Models.Room", b =>
                 {
+                    b.HasOne("thebooking.Models.Building", "Building")
+                        .WithMany("Rooms")
+                        .HasForeignKey("BuildingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Building");
+                });
+
+            modelBuilder.Entity("thebooking.Models.RoomEquipment", b =>
+                {
+                    b.HasOne("thebooking.Models.Equipment", "Equipment")
+                        .WithMany("RoomEquipments")
+                        .HasForeignKey("EquipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("thebooking.Models.Room", "Room")
+                        .WithMany("RoomEquipments")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Equipment");
+
+                    b.Navigation("Room");
+                });
+
+            modelBuilder.Entity("thebooking.Models.Building", b =>
+                {
+                    b.Navigation("Rooms");
+                });
+
+            modelBuilder.Entity("thebooking.Models.Equipment", b =>
+                {
+                    b.Navigation("RoomEquipments");
+                });
+
+            modelBuilder.Entity("thebooking.Models.Room", b =>
+                {
                     b.Navigation("Bookings");
+
+                    b.Navigation("RoomEquipments");
                 });
 #pragma warning restore 612, 618
         }

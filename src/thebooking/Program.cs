@@ -35,6 +35,7 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
+    DBInit.Seed(app);
 }
 
 app.MapStaticAssets();

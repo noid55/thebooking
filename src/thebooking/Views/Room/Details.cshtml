@@ -15,17 +15,29 @@
         <dd class="col-sm-10">@Model.Capacity</dd>
 
         <dt class="col-sm-2">Building</dt>
-        <dd class="col-sm-10">@Model.Building</dd>
+        <dd class="col-sm-10">@Model.Building?.Name</dd>
 
         <dt class="col-sm-2">Description</dt>
         <dd class="col-sm-10">@Model.Description</dd>
+
+        <dt class="col-sm-2">Equipment</dt>
+        <dd class="col-sm-10">
+            @if (Model.RoomEquipments != null && Model.RoomEquipments.Any())
+            {
+                @string.Join(", ", Model.RoomEquipments.Select(re => re.Equipment.Name))
+            }
+            else
+            {
+                <span>No equipment</span>
+            }
+        </dd>
     </dl>
 <h3>Bookings </h3>
-@if (Model.Bookings != null){
+@if (Model.Bookings != null && Model.Bookings.Any()){
 
 <ul>
 @foreach (var booking in Model.Bookings){
-<li> @booking.Topic - @booking.BookedBy </li>
+<li> @booking.Topic: @booking.StartTime - @booking.EndTime (@booking.Status) </li>
 
 }
 </ul>
