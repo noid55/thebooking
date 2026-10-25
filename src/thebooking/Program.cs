@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using thebooking.Models;
+using thebooking.DAL;
 using Serilog;
 using Serilog.Events;
 
@@ -23,6 +23,10 @@ builder.Services.AddDbContext<BookingDbContext>(options =>
 {
     options.UseSqlite(builder.Configuration["ConnectionStrings:BookingDbContextConnection"]);
 });
+builder.Services.AddScoped<IRoomRepository, RoomRepository>();
+builder.Services.AddScoped<IBuildingRepository, BuildingRepository>();
+builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())

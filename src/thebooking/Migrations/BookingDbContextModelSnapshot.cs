@@ -3,7 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using thebooking.Models;
+using thebooking.DAL;
 
 #nullable disable
 
@@ -86,6 +86,7 @@ namespace thebooking.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.HasKey("EquipmentId");
@@ -115,7 +116,8 @@ namespace thebooking.Migrations
 
                     b.HasKey("RoomId");
 
-                    b.HasIndex("BuildingId");
+                    b.HasIndex("BuildingId", "Name")
+                        .IsUnique();
 
                     b.ToTable("Rooms");
                 });

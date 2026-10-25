@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using thebooking.Models;
 
-namespace thebooking.Models;
+namespace thebooking.DAL;
 
 public static class DBInit
 {

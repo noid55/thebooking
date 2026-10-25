@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using thebooking.Models;
 
-namespace thebooking.Models;
+namespace thebooking.DAL;
 
 public class BookingDbContext : DbContext
 {
@@ -21,6 +22,13 @@ public class BookingDbContext : DbContext
     }
  protected override void OnModelCreating(ModelBuilder modelBuilder)
     { 
+        //et rom som har bookinger kan ikke slettes
+        modelBuilder.Entity<Booking>()
+            .HasOne(b => b.Room)
+            .WithMany(r => r.Bookings)
+            .HasForeignKey(b => b.RoomId)
+            .OnDelete(DeleteBehavior.Restrict);
+            
         //et bygg som har rom kan ikke slettes
         modelBuilder.Entity<Room>()
         .HasOne(r => r.Building)
@@ -40,7 +48,10 @@ public class BookingDbContext : DbContext
             .HasIndex(re => new { re.RoomId, re.EquipmentId })
             .IsUnique();
         
-
+        // et bygg kan ikke ha to rom med samme navn
+        modelBuilder.Entity<Room>()
+            .HasIndex(r => new { r.BuildingId, r.Name })
+            .IsUnique();
 
 
     }
