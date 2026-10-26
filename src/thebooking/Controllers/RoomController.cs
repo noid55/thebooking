@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using thebooking.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,12 +38,14 @@ public class RoomController : Controller
     }
 
     [HttpGet]
+    [Authorize]
     public IActionResult Create()
     {
         return View();
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Create(Room room)
     {
         try
@@ -64,6 +67,7 @@ public class RoomController : Controller
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> Edit(int id)
     {
         var room = await _bookingDbContext.Rooms.FindAsync(id);
@@ -77,6 +81,7 @@ public class RoomController : Controller
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Edit(int id, Room room)
     {
         if (id != room.RoomId)
@@ -105,6 +110,7 @@ public class RoomController : Controller
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> Delete(int id)
     {
         var room = await _bookingDbContext.Rooms
@@ -119,6 +125,7 @@ public class RoomController : Controller
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var room = await _bookingDbContext.Rooms.FindAsync(id);
