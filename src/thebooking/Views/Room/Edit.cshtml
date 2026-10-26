@@ -1,30 +1,42 @@
-@model Room
+@model thebooking.ViewModels.RoomFormViewModel
 
 <h2>Edit Room</h2>
 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 <form asp-action="Edit">
-    <input type="hidden" asp-for="RoomId" />
+    <input type="hidden" asp-for="Room.RoomId" />
     <div class="form-group">
-        <label asp-for="Name"></label><span class="text-danger">*</span>
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
+        <label asp-for="Room.Name"></label><span class="text-danger">*</span>
+        <input asp-for="Room.Name" class="form-control" />
+        <span asp-validation-for="Room.Name" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="Capacity"></label><span class="text-danger">*</span>
-        <input asp-for="Capacity" class="form-control" />
-        <span asp-validation-for="Capacity" class="text-danger"></span>
+        <label asp-for="Room.Capacity"></label><span class="text-danger">*</span>
+        <input asp-for="Room.Capacity" class="form-control" />
+        <span asp-validation-for="Room.Capacity" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="BuildingId"></label><span class="text-danger">*</span>
-        <input asp-for="BuildingId" class="form-control" />
-        <span asp-validation-for="BuildingId" class="text-danger"></span>
+        <label asp-for="Room.BuildingId"></label><span class="text-danger">*</span>
+        <select asp-for="Room.BuildingId" asp-items="Model.BuildingSelectList" class="form-control">
+            <option value="">Select a building...</option>
+        </select>
+        <span asp-validation-for="Room.BuildingId" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="Description"></label>
-        <input asp-for="Description" class="form-control" />
-        <span asp-validation-for="Description" class="text-danger"></span>
+        <label asp-for="Room.Description"></label>
+        <input asp-for="Room.Description" class="form-control" />
+        <span asp-validation-for="Room.Description" class="text-danger"></span>
     </div>
-
+        <div class="form-group">
+        <label>Equipment</label>
+        @foreach (var equipment in Model.EquipmentSelectList)
+        {
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="selectedEquipmentIds"
+                       value="@equipment.Value" id="equipment-@equipment.Value" checked="@equipment.Selected" />
+                <label class="form-check-label" for="equipment-@equipment.Value">@equipment.Text</label>
+            </div>
+        }
+    </div>
     <button type="submit" class="btn btn-primary">Save</button>
     <a asp-action="Table" class="btn btn-secondary">Cancel</a>
 </form>
