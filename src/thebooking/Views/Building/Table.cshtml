@@ -15,7 +15,7 @@
             <td>@building.BuildingId</td>
             <td><a asp-action="Details" asp-route-id="@building.BuildingId">@building.Name</a></td>
             <td>@building.Address</td>
-            <td>@(building.Rooms?.Count ?? 0)</td> //antall rom i bygget
+            <td>@(building.Rooms?.Count ?? 0)</td> @*antall rom i bygget*@
             <td>
                 <a asp-action="Edit" asp-route-id="@building.BuildingId" class="btn btn-primary btn-sm">Edit</a>
                 <a asp-action="Delete" asp-route-id="@building.BuildingId" class="btn btn-danger btn-sm">Delete</a>

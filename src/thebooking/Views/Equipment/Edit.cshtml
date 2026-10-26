@@ -1,0 +1,14 @@
+@model thebooking.Models.Equipment
+
+<h2>Edit Equipment</h2>
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<form asp-action="Edit">
+    <input type="hidden" asp-for="EquipmentId" />
+    <div class="form-group">
+        <label asp-for="Name"></label><span class="text-danger">*</span>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Table" class="btn btn-secondary">Cancel</a>
+</form>

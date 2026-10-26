@@ -1,0 +1,23 @@
+@model IEnumerable<thebooking.Models.Equipment>
+<h1>@ViewBag.CurrentViewName</h1>
+<a asp-action="Create" class="btn btn-primary">Create new equipment</a>
+<table class="table table-striped">
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Rooms</th>
+        <th></th>
+    </tr>
+    @foreach (var equipment in Model)
+    {
+        <tr>
+            <td>@equipment.EquipmentId</td>
+            <td><a asp-action="Details" asp-route-id="@equipment.EquipmentId">@equipment.Name</a></td>
+            <td>@(equipment.RoomEquipments?.Count ?? 0)</td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@equipment.EquipmentId" class="btn btn-primary btn-sm">Edit</a>
+                <a asp-action="Delete" asp-route-id="@equipment.EquipmentId" class="btn btn-danger btn-sm">Delete</a>
+            </td>
+        </tr>
+    }
+</table>
