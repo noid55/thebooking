@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.ComponentModel.DataAnnotations;
 namespace thebooking.Models;
 
@@ -13,8 +14,6 @@ public class Booking
     public string Topic { get; set;} = string.Empty;
   
 
-    public string UserId { get; set; } = string.Empty; //Byttet BookedBy med UserId 
-
     [Display(Name = "Start time")]
     public DateTime StartTime { get; set; }
     
@@ -24,6 +23,12 @@ public class Booking
     public  DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public BookingStatus Status { get; set; } = BookingStatus.Confirmed;
+
+    /// The owner of the booking. Set by the server to the logged-in user's ID,
+    // so a student cannot book in someone else's name.
+    [BindNever]
+    [ValidateNever]
+    public string UserId { get; set; } = string.Empty;
 
 
 }

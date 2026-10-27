@@ -1,0 +1,41 @@
+@using thebooking.Models
+@model IEnumerable<Booking>
+<h1>@ViewBag.CurrentViewName</h1>
+<a asp-action="Create" class="btn btn-primary">Book a room</a>
+
+@if (!Model.Any())
+{
+    <p>No bookings.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <tr>
+            <th>Id</th>
+            <th>Room</th>
+            <th>Topic</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+        @foreach (var booking in Model)
+        {
+            <tr>
+                <td>@booking.BookingId</td>
+                <td>@booking.Room?.Name (@booking.Room?.Building?.Name)</td>
+                <td><a asp-action="Details" asp-route-id="@booking.BookingId">@booking.Topic</a></td>
+                <td>@booking.StartTime.ToString("dd.MM.yyyy")</td>
+                <td>@booking.StartTime.ToString("HH:mm") - @booking.EndTime.ToString("HH:mm")</td>
+                <td>
+                    @*If the booking is confirmed or not. the status badge is green for active bookings and grey for cancelled ones* *@
+                    <span class="badge @(booking.Status == BookingStatus.Confirmed ? "bg-success" : "bg-secondary")">@booking.Status</span>
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@booking.BookingId" class="btn btn-primary btn-sm">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@booking.BookingId" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+        }
+    </table>
+}

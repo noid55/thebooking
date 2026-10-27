@@ -82,4 +82,15 @@ public class BookingRepository : IBookingRepository
             .OrderBy(b => b.StartTime)
             .ToListAsync();
     }
+
+    //Domeneregel: true hvis brukeren har en bekreftet booking som overlapper tidsrommet.
+    public async Task<bool> HasUserOverlap(string userId, DateTime start, DateTime end, int? excludeBookingId = null)
+    {
+        return await _db.Bookings.AnyAsync(b =>
+             b.UserId == userId &&
+            b.Status == BookingStatus.Confirmed &&
+            b.StartTime < end &&
+            start < b.EndTime &&
+            (excludeBookingId == null || b.BookingId != excludeBookingId)); //booking som redigeres sammelignes ikke med seg selv
+    }
 }

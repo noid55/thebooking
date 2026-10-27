@@ -14,12 +14,15 @@
         <dt class="col-sm-2">Capacity</dt>
         <dd class="col-sm-10">@Model.Capacity</dd>
 
+        @* Building is loaded with lazy loading *@
         <dt class="col-sm-2">Building</dt>
         <dd class="col-sm-10">@Model.Building?.Name</dd>
 
         <dt class="col-sm-2">Description</dt>
         <dd class="col-sm-10">@Model.Description</dd>
 
+        @* Conditional rendering (if/else): equipment comes from the N:M relationship Room <-> Equipment
+           via RoomEquipment. Shown as a comma-separated list or "No equipment" if the room has none. *@
         <dt class="col-sm-2">Equipment</dt>
         <dd class="col-sm-10">
             @if (Model.RoomEquipments != null && Model.RoomEquipments.Any())
@@ -32,19 +35,24 @@
             }
         </dd>
     </dl>
-<h3>Bookings </h3>
-@if (Model.Bookings != null && Model.Bookings.Any()){
 
-<ul>
-@foreach (var booking in Model.Bookings){
-<li> @booking.Topic: @booking.StartTime - @booking.EndTime (@booking.Status) </li>
-
-}
-</ul>
-}
-else {
-
-<p> No bookings. </p> 
-}
+    @* Conditional rendering (if/else): shows all bookings for this room (confirmed and cancelled),
+   or "No bookings." With lazy loading an empty list is not null, so .Any() is also used here. *@
+    <h3>Bookings </h3>
+    @if (Model.Bookings != null && Model.Bookings.Any())
+    {
+        <ul>
+            @foreach (var booking in Model.Bookings)
+            {
+                <li> @booking.Topic: @booking.StartTime - @booking.EndTime (@booking.Status) </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p> No bookings. </p>
+    }
     <a asp-action="Table" class="btn btn-secondary">Back to Table View</a>
-</div>
+    <a asp-controller="Booking" asp-action="Create" asp-route-roomId="@Model.RoomId" 
+    class="btn btn-primary">Book this room</a>
+    </div>
