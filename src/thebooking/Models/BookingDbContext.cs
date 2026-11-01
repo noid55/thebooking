@@ -1,12 +1,13 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace thebooking.Models;
 
-public class BookingDbContext : DbContext
+public class BookingDbContext : IdentityDbContext
 {
     public BookingDbContext(DbContextOptions<BookingDbContext> options) : base(options)
     {
-       
+        Database.EnsureCreated();
     }
     public DbSet<Room> Rooms { get; set; }
     public DbSet<Booking> Bookings { get; set; }
@@ -17,6 +18,8 @@ public class BookingDbContext : DbContext
     }
  protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<Booking>()
             .HasOne(b => b.Room)
             .WithMany(r => r.Bookings)

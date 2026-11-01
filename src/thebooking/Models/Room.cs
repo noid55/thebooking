@@ -21,5 +21,4 @@ public class Room
     public string? Description { get; set; }
 
       public virtual List<Booking>? Bookings { get; set; }
-
 }
