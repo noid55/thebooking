@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 
@@ -22,23 +23,25 @@ const RoomTable = ({ rooms }) => {
 
   return (
     <div>
-      <Button
-        variant="secondary"
-        className="mb-3 me-2"
-        onClick={toggleDescriptions}
-      >
-        {showDescriptions ? 'Hide Descriptions' : 'Show Descriptions'}
-      </Button>
+      <div className="d-flex justify-content-end flex-wrap gap-2 mb-3">
+        <Button
+          variant="outline-secondary"
+          size="sm"
+          onClick={toggleDescriptions}
+        >
+          {showDescriptions ? 'Hide Descriptions' : 'Show Descriptions'}
+        </Button>
 
-      <Button
-        variant="secondary"
-        className="mb-3"
-        onClick={toggleImages}
-      >
-        {showImages ? 'Hide Images' : 'Show Images'}
-      </Button>
+        <Button
+          variant="outline-secondary"
+          size="sm"
+          onClick={toggleImages}
+        >
+          {showImages ? 'Hide Images' : 'Show Images'}
+        </Button>
+      </div>
 
-      <Table striped bordered hover>
+      <Table striped bordered hover responsive>
         <thead>
           <tr>
             <th>Name</th>
@@ -66,8 +69,8 @@ const RoomTable = ({ rooms }) => {
                     src={roomImages[index % roomImages.length]}
                     alt={`Room ${room.name}`}
                     style={{
-                      width: '150px',
-                      height: '100px',
+                      width: '120px',
+                      height: '80px',
                       objectFit: 'cover',
                     }}
                   />
@@ -82,3 +85,4 @@ const RoomTable = ({ rooms }) => {
 };
 
 export default RoomTable;
+

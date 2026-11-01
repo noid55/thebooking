@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Button, Form, Spinner } from 'react-bootstrap';
@@ -31,38 +32,47 @@ const RoomListPage = () => {
   );
 
   return (
-    <div>
-      <h1>Rooms</h1>
+    <div className="py-4">
+      {/* Heading and search */}
+      <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <h1 className="mb-0">Rooms</h1>
 
-      <Form.Group className="mb-3">
-        <Form.Label>Search rooms</Form.Label>
-        <Form.Control
-          type="text"
-          placeholder="Search by name, building or description..."
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-        />
-      </Form.Group>
+        <Form.Group style={{ width: '300px', maxWidth: '100%' }}>
+          <Form.Control
+            size="sm"
+            type="text"
+            placeholder="Search rooms..."
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+          />
+        </Form.Group>
+      </div>
 
-      <Button
-        variant="primary"
-        className="mb-3 me-2"
-        onClick={() => refetch()}
-        disabled={isFetching}
-      >
-        {isFetching ? 'Loading...' : 'Refresh Rooms'}
-      </Button>
+      {/* Main action buttons */}
+      <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <Button
+          variant="outline-primary"
+          size="sm"
+          onClick={() => refetch()}
+          disabled={isFetching}
+        >
+          {isFetching ? 'Loading...' : 'Refresh Rooms'}
+        </Button>
 
-      <Button
-        variant="secondary"
-        className="mb-3"
-        onClick={toggleTableOrGrid}
-      >
-        {showTable ? 'Show Grid' : 'Show Table'}
-      </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={toggleTableOrGrid}
+        >
+          {showTable ? 'Show Grid' : 'Show Table'}
+        </Button>
+      </div>
 
+      {/* Room content */}
       {isLoading ? (
-        <Spinner animation="border" role="status" />
+        <div className="text-center py-4">
+          <Spinner animation="border" size="sm" role="status" />
+        </div>
       ) : error ? (
         <Alert variant="danger">
           Could not load rooms. Please try again.
