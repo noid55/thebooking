@@ -1,8 +1,17 @@
 ﻿.navbar {
-    background-color: #bcd3eb;
+    background-color: #3b63d6;
+}
+
+.navbar-brand {
+    font-weight: 600;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+    color: #ffffff;
 }
 
 body {
     
-    background-color: #c7d9eb;
+    background-color: white;
 }
