@@ -35,7 +35,7 @@ const RoomListPage = () => {
           </thead>
           <tbody>
             {rooms.map((room) => (
-              <tr key={room.id}>
+              <tr key={room.roomId}>
                 <td>{room.name}</td>
                 <td>{room.building}</td>
                 <td>{room.capacity}</td>

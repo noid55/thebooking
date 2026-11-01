@@ -1,11 +1,10 @@
 // Service layer: components call these functions instead of fetch directly.
-// TODO: replace the mock data with fetch() calls to the API.
-
-const MOCK_ROOMS = [
-  { id: 1, name: 'Room 1', building: 'P35', capacity: 16 },
-  { id: 2, name: 'Room 2', building: 'P48', capacity: 6 },
-];
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5234';
 
 export async function getRooms() {
-  return MOCK_ROOMS;
+  const response = await fetch(`${API_URL}/api/roomapi/roomlist`);
+  if (!response.ok) {
+    throw new Error(`Fetch failed with status ${response.status}`);
+  }
+  return response.json();
 }
