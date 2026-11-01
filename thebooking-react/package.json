@@ -12,6 +12,8 @@
     "backend": "dotnet run --project ../src/api/api.csproj"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.105.1",
+    "@tanstack/react-query-devtools": "^5.105.1",
     "bootstrap": "^5.3.8",
     "react": "^19.2.8",
     "react-bootstrap": "^2.10.10",

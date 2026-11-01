@@ -1,27 +1,29 @@
-import { useEffect, useState } from 'react';
-import { Alert, Spinner, Table } from 'react-bootstrap';
+import { useQuery } from '@tanstack/react-query';
+import { Alert, Button, Spinner, Table } from 'react-bootstrap';
 import { getRooms } from '../services/roomService';
 
 const RoomListPage = () => {
-  const [rooms, setRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    getRooms()
-      .then(setRooms)
-      .catch(() => setError('Could not load rooms. Please try again.'))
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: rooms = [], isLoading, error, refetch, isFetching } = useQuery({
+    queryKey: ['rooms'],
+    queryFn: getRooms,
+  });
 
   return (
     <div>
       <h1>Rooms</h1>
+      <Button
+        variant="primary"
+        className="mb-3"
+        onClick={() => refetch()}
+        disabled={isFetching}
+      >
+        {isFetching ? 'Loading...' : 'Refresh Rooms'}
+      </Button>
 
-      {loading ? (
+      {isLoading ? (
         <Spinner animation="border" role="status" />
       ) : error ? (
-        <Alert variant="danger">{error}</Alert>
+        <Alert variant="danger">Could not load rooms. Please try again.</Alert>
       ) : rooms.length === 0 ? (
         <Alert variant="info">No rooms found.</Alert>
       ) : (
