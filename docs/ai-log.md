@@ -40,7 +40,9 @@ Add an entry each time AI is used. Fill in the "Verification" and "Human fix" pa
 - **Category (7.1):** Understanding code/concepts
 - **Tool:** Claude Code (Code section of the Claude desktop app)
 - **Target task:** The app crashed with `table "Rooms" already exists` after merging main.
-- **Exact prompt:** _TODO: copy from the Code session_
+- **Exact prompt:** _TODO: 
+  > Can you check that my branch works correctly? Look for any errors or faults in the code that might interfere. I want it to work for my teammates that potentially might not have ran any of the code before
+  
 - **Output:** Explained that an old `Booking.db` (created before `EnsureCreated()` was removed) clashes with the migrations. Added a README section on deleting `Booking.db` (commit `c87b45d`).
 - **Verification / human fix:** _TODO_
 - **Code generated:** None (README text only).
