@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using thebooking.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace thebooking.DAL;
 
-public class BookingDbContext : DbContext
+public class BookingDbContext : IdentityDbContext
 {
     public BookingDbContext(DbContextOptions<BookingDbContext> options) : base(options)
     {
@@ -22,6 +23,7 @@ public class BookingDbContext : DbContext
     }
  protected override void OnModelCreating(ModelBuilder modelBuilder)
     { 
+        base.OnModelCreating(modelBuilder);
         //et rom som har bookinger kan ikke slettes
         modelBuilder.Entity<Booking>()
             .HasOne(b => b.Room)

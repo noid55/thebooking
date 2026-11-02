@@ -68,7 +68,7 @@ public class RoomController : Controller
 
     [HttpGet]
     [Authorize]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
         return View(await CreateRoomFormViewModel(new Room(), new List<int>()));
     }
