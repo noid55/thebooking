@@ -56,3 +56,7 @@
     <a asp-controller="Booking" asp-action="Create" asp-route-roomId="@Model.RoomId" 
     class="btn btn-primary">Book this room</a>
     </div>
+
+@section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }

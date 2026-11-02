@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using thebooking.DAL;
 using Serilog;
@@ -42,6 +43,24 @@ builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 //Service layer med domenereglene for booking
 builder.Services.AddScoped<IBookingService, BookingService>();
 
+builder.Services.AddDefaultIdentity<IdentityUser>(options => {
+    options.SignIn.RequireConfirmedAccount = false; // Disable email confirmation for development
+}).AddEntityFrameworkStores<BookingDbContext>();
+    
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Account/Login";
+});
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
@@ -57,5 +76,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapStaticAssets();
+app.UseSession();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapDefaultControllerRoute();
 app.Run();

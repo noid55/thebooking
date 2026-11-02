@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using thebooking.Models;
 using thebooking.DAL;
 using thebooking.ViewModels;
@@ -66,12 +67,14 @@ public class RoomController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Create()
+    [Authorize]
+    public IActionResult Create()
     {
         return View(await CreateRoomFormViewModel(new Room(), new List<int>()));
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Create(Room room, List<int> selectedEquipmentIds)
     {
         if (ModelState.IsValid && await _roomRepository.NameExistsInBuilding(room.Name, room.BuildingId))
@@ -98,6 +101,7 @@ public class RoomController : Controller
     }    
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> Edit(int id)
     {
         var room = await _roomRepository.GetRoomById(id);
@@ -113,6 +117,7 @@ public class RoomController : Controller
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Edit(int id, Room room, List<int> selectedEquipmentIds)
     {
         if (id != room.RoomId)
@@ -145,6 +150,7 @@ public class RoomController : Controller
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> Delete(int id)
     {
         var room = await _roomRepository.GetRoomById(id);
@@ -158,6 +164,7 @@ public class RoomController : Controller
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var room = await _roomRepository.GetRoomById(id);
