@@ -1,0 +1,26 @@
+@model thebooking.Models.Equipment
+
+<h2>Delete Equipment</h2>
+<h3>Are you sure you want to delete this equipment?</h3>
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">Equipment Id</dt>
+        <dd class="col-sm-10">@Model.EquipmentId</dd>
+
+        <dt class="col-sm-2">Name</dt>
+        <dd class="col-sm-10">@Model.Name</dd>
+    </dl>
+
+    @if (Model.RoomEquipments != null && Model.RoomEquipments.Any())
+    {
+        <p class="alert-danger">
+            This equipment is used in @Model.RoomEquipments.Count room(s). It will be removed from those rooms, but the rooms will not be deleted.
+        </p>
+    }
+
+    <form asp-action="DeleteConfirmed" asp-route-id="@Model.EquipmentId" method="post">
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a asp-action="Table" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>

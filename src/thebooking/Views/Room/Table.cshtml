@@ -17,7 +17,7 @@
                 <td><a asp-action="Details" asp-route-id="@room.RoomId">@room.Name</a></td>
                 <td>@room.Capacity</td>
                 <td>@room.Description</td>
-                <td>@room.Building</td>
+                <td>@room.Building?.Name</td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@room.RoomId" class="btn btn-primary btn-sm">Edit</a>
                     <a asp-action="Delete" asp-route-id="@room.RoomId" class="btn btn-danger btn-sm">Delete</a>

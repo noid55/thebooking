@@ -1,0 +1,45 @@
+@using thebooking.Models
+@model Booking
+
+<h2>Booking Details</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">Booking Id</dt>
+        <dd class="col-sm-10">@Model.BookingId</dd>
+
+        <dt class="col-sm-2">Room</dt>
+        <dd class="col-sm-10">@Model.Room?.Name (@Model.Room?.Building?.Name)</dd>
+
+        <dt class="col-sm-2">Topic</dt>
+        <dd class="col-sm-10">@Model.Topic</dd>
+
+        <dt class="col-sm-2">Start time</dt>
+        <dd class="col-sm-10">@Model.StartTime.ToString("dd.MM.yyyy HH:mm")</dd>
+
+        <dt class="col-sm-2">End time</dt>
+        <dd class="col-sm-10">@Model.EndTime.ToString("dd.MM.yyyy HH:mm")</dd>
+
+        <dt class="col-sm-2">Status</dt>
+        <dd class="col-sm-10">
+            <span class="badge @(Model.Status == BookingStatus.Confirmed ? "bg-success" : "bg-secondary")">@Model.Status</span>
+        </dd>
+
+        <dt class="col-sm-2">Created</dt>
+        <dd class="col-sm-10">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</dd>
+    </dl>
+
+    @* can only be cancelled if the booking is confirmed and has not started yet *@
+    @if (Model.Status == BookingStatus.Confirmed && Model.StartTime > DateTime.Now)
+    {
+        <form asp-action="Cancel" asp-route-id="@Model.BookingId" method="post" class="d-inline">
+            <button type="submit" class="btn btn-warning">Cancel booking</button>
+        </form>
+    }
+    <a asp-action="MyBookings" class="btn btn-secondary">Back to My Bookings</a>
+</div>

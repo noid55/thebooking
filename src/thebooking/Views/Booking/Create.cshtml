@@ -1,0 +1,30 @@
+@model thebooking.ViewModels.BookingFormViewModel
+
+<h2>Book a Room</h2>
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<form asp-action="Create">
+    <div class="form-group">
+        <label asp-for="Booking.RoomId">Room</label><span class="text-danger">*</span>
+        <select asp-for="Booking.RoomId" asp-items="Model.RoomSelectList" class="form-control">
+            <option value="">Select a room...</option>
+        </select>
+        <span asp-validation-for="Booking.RoomId" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Booking.Topic"></label><span class="text-danger">*</span>
+        <input asp-for="Booking.Topic" class="form-control" />
+        <span asp-validation-for="Booking.Topic" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Booking.StartTime"></label><span class="text-danger">*</span>
+        <input asp-for="Booking.StartTime" class="form-control" />
+        <span asp-validation-for="Booking.StartTime" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Booking.EndTime"></label><span class="text-danger">*</span>
+        <input asp-for="Booking.EndTime" class="form-control" />
+        <span asp-validation-for="Booking.EndTime" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Book</button>
+    <a asp-action="MyBookings" class="btn btn-secondary">Back to My Bookings</a>
+</form>

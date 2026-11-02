@@ -1,0 +1,32 @@
+@model thebooking.Models.Building
+
+<h2>Building Details</h2>
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">Building Id</dt>
+        <dd class="col-sm-10">@Model.BuildingId</dd>
+
+        <dt class="col-sm-2">Name</dt>
+        <dd class="col-sm-10">@Model.Name</dd>
+
+        <dt class="col-sm-2">Address</dt>
+        <dd class="col-sm-10">@Model.Address</dd>
+    </dl>
+
+    <h3>Rooms</h3>
+    @if (Model.Rooms != null && Model.Rooms.Any())
+    {
+        <ul>
+            @foreach (var room in Model.Rooms)
+            {
+                <li><a asp-controller="Room" asp-action="Details" asp-route-id="@room.RoomId">@room.Name</a> (capacity @room.Capacity)</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No rooms in this building.</p>
+    }
+
+    <a asp-action="Table" class="btn btn-secondary">Back to Table View</a>
+</div>

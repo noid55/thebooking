@@ -4,7 +4,7 @@ Currently this is the best project in the world, please give us A+++ thank you �
 
 
 ## Kjøring av webappen
-Naviger til folder ```cd C:\Skole\Webapp\thebooking\src\thebooking```
+Fra rotmappen til repoet, naviger til ```cd src/thebooking```
 
 Kjør kommando ```dotnet watch```
 Eller ```dotnet run```
@@ -12,6 +12,15 @@ Eller ```dotnet run```
 Naviger til ```http://localhost:5190/Room/table``` i nettleser.
 
 Nå har vi også en Homepage, så man kan navigere seg rundt på webapplikasjonen ved hjelp av GUI etter ```dotnet watch```.
+
+### Krasjer appen med `table "Rooms" already exists`?
+Da har du en gammel database (`Booking.db`) fra en tidligere versjon av prosjektet. Slett den, så lages en ny med testdata neste gang appen starter:
+
+```
+cd src/thebooking
+rm Booking.db*
+```
+(I PowerShell: `Remove-Item Booking.db*`)
 
 ## Home page og shared view 
 Under [thebooking/src/thebooking/Views/shared/_Layout.cshtml](./src/thebooking/Views/Shared/_Layout.cshtml) ligger _layout.cshtml filen. 
