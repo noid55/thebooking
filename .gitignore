@@ -22,3 +22,8 @@
 # Local files, vendor assets
 wwwroot/lib/
 **/wwwroot/lib/
+src/api/bin/
+src/api/obj/
+src/api/*.db
+src/api/*.db-shm
+src/api/*.db-wal
