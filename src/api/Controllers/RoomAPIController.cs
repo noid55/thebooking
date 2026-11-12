@@ -32,4 +32,49 @@ public class RoomAPIController : ControllerBase
         });
         return Ok(dtos);
     }
+[HttpPost("create")]
+public async Task<IActionResult> Create([FromBody] RoomDto roomDto)
+{
+    if (roomDto == null)
+    {
+        return BadRequest("Room data is missing.");
+    }
+
+    var room = new Room
+    {
+        Name = roomDto.Name,
+        Capacity = roomDto.Capacity,
+        Building = roomDto.Building,
+        Description = roomDto.Description
+    };
+
+    if (!TryValidateModel(room))
+    {
+        return ValidationProblem(ModelState);
+    }
+
+    try
+    {
+        await _db.Rooms.AddAsync(room);
+        await _db.SaveChangesAsync();
+
+        var createdRoom = new RoomDto
+        {
+            RoomId = room.RoomId,
+            Name = room.Name,
+            Capacity = room.Capacity,
+            Building = room.Building,
+            Description = room.Description
+        };
+
+        return StatusCode(201, createdRoom);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Failed to create room.");
+        return StatusCode(500, "An error occurred while creating the room.");
+    }
 }
+}
+
+
