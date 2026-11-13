@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "frontend": "vite",
-    "backend": "dotnet run --project ../src/api/api.csproj"
+    "backend": "dotnet run --project ../api/api.csproj"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.105.1",
