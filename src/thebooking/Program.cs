@@ -4,6 +4,7 @@ using thebooking.DAL;
 using Serilog;
 using Serilog.Events;
 using thebooking.Services;
+using thebooking.Data;
 
 // Hver kjøring av appen får sin egen loggfil, med dato og klokkeslett i navnet
 var logFileName = $"Logs/app_{DateTime.Now:yyyyMMdd_HHmmss}.log";
@@ -45,7 +46,7 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => {
     options.SignIn.RequireConfirmedAccount = false; // Disable email confirmation for development
-}).AddEntityFrameworkStores<BookingDbContext>();
+}).AddRoles<IdentityRole>().AddEntityFrameworkStores<BookingDbContext>();
     
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -65,7 +66,11 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<BookingDbContext>();
+
     db.Database.Migrate();
+
+    await RoleSeeder.SeedRolesAsync(scope.ServiceProvider);
+    await AdminSeeder.SeedAdminAsync(scope.ServiceProvider);
 }
 
 
