@@ -1,6 +1,8 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/api/api.csproj" />
     <Project Path="src/thebooking/thebooking.csproj" />
+  </Folder>
+  <Folder Name="/subapp2/">
+    <Project Path="subapp2/api/api.csproj" />
   </Folder>
 </Solution>
