@@ -10,6 +10,12 @@
         </select>
         <span asp-validation-for="Booking.RoomId" class="text-danger"></span>
     </div>
+    @* Course code, used when students search for open study groups *@
+    <div class="form-group">
+        <label asp-for="Booking.Course"></label><span class="text-danger">*</span>
+        <input asp-for="Booking.Course" class="form-control" placeholder="e.g. DATA1500" />
+        <span asp-validation-for="Booking.Course" class="text-danger"></span>
+    </div>
     <div class="form-group">
         <label asp-for="Booking.Topic"></label><span class="text-danger">*</span>
         <input asp-for="Booking.Topic" class="form-control" />
@@ -25,6 +31,22 @@
         <input asp-for="Booking.EndTime" class="form-control" />
         <span asp-validation-for="Booking.EndTime" class="text-danger"></span>
     </div>
+    @* Total number of people in the session (the owner is included) *@
+    <div class="form-group">
+        <label asp-for="Booking.MaxParticipants"></label><span class="text-danger">*</span>
+        <input asp-for="Booking.MaxParticipants" class="form-control" />
+        <span asp-validation-for="Booking.MaxParticipants" class="text-danger"></span>
+    </div>
+    @* Whether other students can find and join the session *@
+    <div class="form-check">
+        <input asp-for="Booking.IsOpen" class="form-check-input" />
+        <label asp-for="Booking.IsOpen" class="form-check-label"></label>
+    </div>
     <button type="submit" class="btn btn-primary">Book</button>
     <a asp-action="MyBookings" class="btn btn-secondary">Back to My Bookings</a>
 </form>
+
+@* Client-side validation, the same as in Room/Create *@
+@section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }

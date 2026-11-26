@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using thebooking.DAL;
@@ -7,30 +9,34 @@ using thebooking.ViewModels;
 
 namespace thebooking.Controllers;
 
+// All booking pages require a logged-in user, because every booking belongs to a user
+[Authorize]
 public class BookingController : Controller
 {
     private readonly IBookingRepository _bookingRepository;
     private readonly IRoomRepository _roomRepository;
     private readonly IBookingService _bookingService;
+    private readonly UserManager<IdentityUser> _userManager; // Used to find the logged-in user
     private readonly ILogger<BookingController> _logger;
 
     public BookingController(IBookingRepository bookingRepository, IRoomRepository roomRepository,
-        IBookingService bookingService, ILogger<BookingController> logger)
+        IBookingService bookingService, UserManager<IdentityUser> userManager, ILogger<BookingController> logger)
     {
         _bookingRepository = bookingRepository;
         _roomRepository = roomRepository;
         _bookingService = bookingService;
+        _userManager = userManager;
         _logger = logger;
     }
 
-    // MIDLERTIDIG til innlogging er på plass. alle bookinger lagres på en test-bruker nå.
-    // Skal byttes til: User.FindFirstValue(ClaimTypes.NameIdentifier)
+    // Returns the ID of the logged-in user.
+    // [Authorize] on the controller guarantees that someone is logged in here.
     private string GetCurrentUserId()
     {
-        return "seed-user-1";
+        return _userManager.GetUserId(User)!;
     }
 
-    //ViewModelen med bookingen og listen over rom til nedtrekkslisten
+    // The ViewModel with the booking and the list of rooms for the dropdown
     private async Task<BookingFormViewModel> CreateBookingFormViewModel(Booking booking)
     {
         var rooms = await _roomRepository.GetAll();
@@ -45,7 +51,7 @@ public class BookingController : Controller
         };
     }
 
-    // Alle bookinger (for admin)
+    // All bookings (for admin)
     public async Task<IActionResult> Table()
     {
         _logger.LogInformation("The booking table was accessed.");
@@ -55,7 +61,7 @@ public class BookingController : Controller
         return View(bookings);
     }
 
-    // Bookingene til innlogget bruker (My bookings). Bruker samme view som Table.
+    // The bookings of the logged-in user (My bookings). Uses the same view as Table.
     public async Task<IActionResult> MyBookings()
     {
         var userId = GetCurrentUserId();
@@ -78,11 +84,11 @@ public class BookingController : Controller
         return View(booking);
     }
 
-    // roomId er valgfri: kommer fra "Book this room"-knappen på Room Details
+    // roomId is optional: it comes from the "Book this room" button on Room Details
     [HttpGet]
     public async Task<IActionResult> Create(int? roomId)
     {
-        var start = DateTime.Today.AddDays(1).AddHours(10); // forslag: i morgen kl. 10
+        var start = DateTime.Today.AddDays(1).AddHours(10); // Suggestion: tomorrow at 10:00
         var booking = new Booking
         {
             RoomId = roomId ?? 0,
@@ -97,7 +103,7 @@ public class BookingController : Controller
     {
         booking.UserId = GetCurrentUserId();
 
-        // domenereglene sjekkes bare når feltene i seg selv er gyldige
+        // The domain rules are only checked when the fields themselves are valid
         if (ModelState.IsValid)
         {
             var errors = await _bookingService.ValidateBooking(booking);
@@ -154,7 +160,7 @@ public class BookingController : Controller
             return NotFound();
         }
 
-        // eieren av bookingen endres ikke ved redigering
+        // The owner of the booking does not change when it is edited
         booking.UserId = existing.UserId;
 
         if (ModelState.IsValid)
@@ -170,11 +176,14 @@ public class BookingController : Controller
         {
             try
             {
-                // bare feltene som kan redigeres kopieres over (CreatedAt, UserId og Status beholdes)
+                // Only the editable fields are copied over (CreatedAt, UserId and Status are kept)
                 existing.RoomId = booking.RoomId;
+                existing.Course = booking.Course;
                 existing.Topic = booking.Topic;
                 existing.StartTime = booking.StartTime;
                 existing.EndTime = booking.EndTime;
+                existing.IsOpen = booking.IsOpen;
+                existing.MaxParticipants = booking.MaxParticipants;
 
                 await _bookingRepository.Update(existing);
                 return RedirectToAction(nameof(Details), new { id });
@@ -189,7 +198,7 @@ public class BookingController : Controller
         return View(await CreateBookingFormViewModel(booking));
     }
 
-    //bookingen settes til Cancelled, bookingen/raden slettes ikke
+    // The booking is set to Cancelled; the row itself is not deleted
     [HttpPost]
     public async Task<IActionResult> Cancel(int id)
     {
