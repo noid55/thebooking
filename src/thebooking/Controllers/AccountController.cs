@@ -27,6 +27,7 @@ public class AccountController : Controller
 
             if (result.Succeeded)
             {
+                await _userManager.AddToRoleAsync(user, "User");
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return RedirectToAction("Index", "Home");
             }
@@ -46,28 +47,25 @@ public class AccountController : Controller
         var model = new LoginViewModel { ReturnUrl = returnUrl };
         return View(model);
     }
-
+    
     [HttpPost]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
-
-        string targetUrl = !string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl) 
-            ? model.ReturnUrl : Url.Action("Index", "Home") ?? "~/";
+        string targetUrl = !string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl)
+            ? model.ReturnUrl
+            : Url.Action("Index", "Home") ?? "~/";
 
         if (ModelState.IsValid)
         {
             var result = await _signInManager.PasswordSignInAsync(
-                model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+                model.Email,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: false);
 
             if (result.Succeeded)
             {
-                var results = await _signInManager.PasswordSignInAsync(
-                    model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-                
-                if (results.Succeeded)
-                {
-                    return Redirect(targetUrl);
-                }
+                return Redirect(targetUrl);
             }
 
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
@@ -75,6 +73,7 @@ public class AccountController : Controller
 
         return View(model);
     }
+
 
     [HttpPost]
     public async Task<IActionResult> Logout()
