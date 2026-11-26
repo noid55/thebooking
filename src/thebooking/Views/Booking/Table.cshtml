@@ -13,9 +13,11 @@ else
         <tr>
             <th>Id</th>
             <th>Room</th>
+            <th>Course</th>
             <th>Topic</th>
             <th>Date</th>
             <th>Time</th>
+            <th>Participants</th>
             <th>Status</th>
             <th></th>
         </tr>
@@ -24,12 +26,20 @@ else
             <tr>
                 <td>@booking.BookingId</td>
                 <td>@booking.Room?.Name (@booking.Room?.Building?.Name)</td>
+                <td>@booking.Course</td>
                 <td><a asp-action="Details" asp-route-id="@booking.BookingId">@booking.Topic</a></td>
                 <td>@booking.StartTime.ToString("dd.MM.yyyy")</td>
                 <td>@booking.StartTime.ToString("HH:mm") - @booking.EndTime.ToString("HH:mm")</td>
+                @* Participants / max. The owner is included, so + 1. *@
+                <td>@((booking.Participations?.Count ?? 0) + 1) / @booking.MaxParticipants</td>
                 <td>
-                    @*If the booking is confirmed or not. the status badge is green for active bookings and grey for cancelled ones* *@
+                    @* Status badge: green for confirmed bookings, grey for cancelled ones *@
                     <span class="badge @(booking.Status == BookingStatus.Confirmed ? "bg-success" : "bg-secondary")">@booking.Status</span>
+                    @* Conditional rendering (if): extra badge when the session is private *@
+                    @if (!booking.IsOpen)
+                    {
+                        <span class="badge bg-dark">Private</span>
+                    }
                 </td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@booking.BookingId" class="btn btn-primary btn-sm">Edit</a>

@@ -1,14 +1,27 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using thebooking.Models;
 
 namespace thebooking.DAL;
 
+// Fills an empty database with test data (only runs in Development, see Program.cs).
+// Roles and the admin are created by RoleSeeder and AdminSeeder in the Data folder, which run before this.
+// Test users (also listed in the documentation):
+//   admin@oslomet.no    / Admin123!    (role: Admin, created by AdminSeeder)
+//   student1@oslomet.no / Student123!  (role: User)
+//   student2@oslomet.no / Student123!  (role: User)
 public static class DBInit
 {
-    public static void Seed(IApplicationBuilder app)
+    // Async, because UserManager only has async methods
+    public static async Task Seed(IApplicationBuilder app)
     {
         using var serviceScope = app.ApplicationServices.CreateScope();
         BookingDbContext context = serviceScope.ServiceProvider.GetRequiredService<BookingDbContext>();
+        var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+
+        // The students must exist before the bookings, because Booking.UserId is a foreign key
+        var student1 = await CreateStudentIfMissing(userManager, "student1@oslomet.no", "Student123!");
+        var student2 = await CreateStudentIfMissing(userManager, "student2@oslomet.no", "Student123!");
 
         if (!context.Buildings.Any())
         {
@@ -72,25 +85,63 @@ public static class DBInit
             context.SaveChanges();
         }
 
+        // Study sessions owned by the test students
         if (!context.Bookings.Any())
         {
             var tomorrow = DateTime.Today.AddDays(1);
             var bookings = new List<Booking>
             {
-                new Booking { RoomId = 1, Topic = "Study group DATA1500", UserId = "seed-user-1",
+                new Booking { RoomId = 1, Course = "DATA1500", Topic = "Study group SQL joins", UserId = student1.Id,
+                              IsOpen = true, MaxParticipants = 4,
                               StartTime = tomorrow.AddHours(10), EndTime = tomorrow.AddHours(12) },
-                new Booking { RoomId = 1, Topic = "Exam preparation",     UserId = "seed-user-2",
-                              StartTime = tomorrow.AddHours(12), EndTime = tomorrow.AddHours(14) },
-                new Booking { RoomId = 3, Topic = "Project meeting",      UserId = "seed-user-1",
+                new Booking { RoomId = 3, Course = "ITPE3200", Topic = "Exam preparation",      UserId = student2.Id,
+                              IsOpen = true, MaxParticipants = 6,
                               StartTime = tomorrow.AddHours(9),  EndTime = tomorrow.AddHours(11) },
-                new Booking { RoomId = 5, Topic = "Group presentation",   UserId = "seed-user-3",
+                new Booking { RoomId = 5, Course = "DAFE2200", Topic = "Project meeting",       UserId = student1.Id,
+                              IsOpen = false, MaxParticipants = 5,
                               StartTime = tomorrow.AddDays(1).AddHours(13), EndTime = tomorrow.AddDays(1).AddHours(15) },
-                new Booking { RoomId = 2, Topic = "Cancelled meeting",    UserId = "seed-user-2",
+                new Booking { RoomId = 2, Course = "DATA1700", Topic = "Cancelled meeting",     UserId = student2.Id,
+                              IsOpen = true, MaxParticipants = 4,
                               StartTime = tomorrow.AddHours(14), EndTime = tomorrow.AddHours(16),
                               Status = BookingStatus.Cancelled },
             };
             context.AddRange(bookings);
             context.SaveChanges();
+
+            // student2 has joined student1's open DATA1500 session and left a message
+            var dataSession = bookings[0];
+            context.Add(new Participation { BookingId = dataSession.BookingId, UserId = student2.Id });
+            context.Add(new Message
+            {
+                BookingId = dataSession.BookingId,
+                UserId = student2.Id,
+                Text = "Hi! I will bring the exercises from week 5."
+            });
+            context.SaveChanges();
         }
+    }
+
+    // Creates a student if it does not exist yet, and gives it the "User" role
+    // (the same role AccountController.Register gives new users)
+    private static async Task<IdentityUser> CreateStudentIfMissing(UserManager<IdentityUser> userManager, string email, string password)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+        if (user == null)
+        {
+            user = new IdentityUser { UserName = email, Email = email, EmailConfirmed = true };
+            var result = await userManager.CreateAsync(user, password);
+            if (!result.Succeeded)
+            {
+                // Stops the startup with a clear error if the password does not follow Identity's rules
+                throw new InvalidOperationException(
+                    $"Could not create seed user {email}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+            }
+        }
+
+        if (!await userManager.IsInRoleAsync(user, "User"))
+        {
+            await userManager.AddToRoleAsync(user, "User");
+        }
+        return user;
     }
 }
