@@ -27,3 +27,6 @@ src/api/obj/
 src/api/*.db
 src/api/*.db-shm
 src/api/*.db-wal
+
+# Word lock files (created while a .docx is open)
+~$*

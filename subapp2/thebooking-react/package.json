@@ -8,7 +8,7 @@
     "build": "eslint . && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "frontend": "vite",
+    "frontend": "vite --open",
     "backend": "dotnet run --project ../api/api.csproj"
   },
   "dependencies": {
