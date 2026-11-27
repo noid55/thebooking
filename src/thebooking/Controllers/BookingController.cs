@@ -62,7 +62,8 @@ public class BookingController : Controller
         };
     }
 
-    // All bookings (for admin)
+    // All bookings: only for admin (students use My bookings and Find study groups)
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Table()
     {
         _logger.LogInformation("The booking table was accessed.");

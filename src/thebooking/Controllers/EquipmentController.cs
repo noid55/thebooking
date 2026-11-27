@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using thebooking.DAL;
 using thebooking.Models;
 
 namespace thebooking.Controllers;
+// Equipment is only managed by admins, so the whole controller is locked to the Admin role
 
 public class EquipmentController : Controller
 {
@@ -101,6 +103,7 @@ public class EquipmentController : Controller
         return View(equipment);
     }
 
+
     [HttpGet]
     public async Task<IActionResult> Delete(int id)
     {
@@ -114,13 +117,14 @@ public class EquipmentController : Controller
         return View(equipment);
     }
 
+
     [HttpPost]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var equipment = await _equipmentRepository.GetEquipmentById(id);
         if (equipment == null)
         {
-             _logger.LogWarning("Equipment {EquipmentId} was not found.", id);
+            _logger.LogWarning("Equipment {EquipmentId} was not found.", id);
             return NotFound();
         }
 

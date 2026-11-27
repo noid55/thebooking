@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using thebooking.DAL;
 using thebooking.Models;
 
 namespace thebooking.Controllers;
-
+// Buildings are only managed by admins, so the whole controller is locked to the Admin role
+[Authorize(Roles = "Admin")]
 public class BuildingController : Controller
 {
     private readonly IBuildingRepository _buildingRepository;
@@ -35,13 +37,11 @@ public class BuildingController : Controller
 
         return View(building);
     }
-
     [HttpGet]
     public IActionResult Create()
     {
         return View();
     }
-
     [HttpPost]
     public async Task<IActionResult> Create(Building building)
     {
@@ -61,7 +61,6 @@ public class BuildingController : Controller
 
         return View(building);
     }
-
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {

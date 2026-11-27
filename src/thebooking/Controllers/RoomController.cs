@@ -92,14 +92,14 @@ public class RoomController : Controller
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create()
     {
         return View(await CreateRoomFormViewModel(new Room(), new List<int>()));
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create(Room room, List<int> selectedEquipmentIds)
     {
         if (ModelState.IsValid && await _roomRepository.NameExistsInBuilding(room.Name, room.BuildingId))
@@ -126,7 +126,7 @@ public class RoomController : Controller
     }    
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Edit(int id)
     {
         var room = await _roomRepository.GetRoomById(id);
@@ -142,7 +142,7 @@ public class RoomController : Controller
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Edit(int id, Room room, List<int> selectedEquipmentIds)
     {
         if (id != room.RoomId)
@@ -175,7 +175,7 @@ public class RoomController : Controller
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         var room = await _roomRepository.GetRoomById(id);
@@ -189,7 +189,7 @@ public class RoomController : Controller
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var room = await _roomRepository.GetRoomById(id);
