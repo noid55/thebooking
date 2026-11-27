@@ -79,5 +79,12 @@ public class BookingService : IBookingService
         }
 
         return errors;
+    }     
+    // Rule 8: a cancelled booking, or a booking that has already started, cannot be changed
+    public bool CanBeChanged(Booking booking)
+    {
+        return booking.Status == BookingStatus.Confirmed && booking.StartTime > DateTime.Now;
     }
+        
+   
 }

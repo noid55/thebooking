@@ -36,6 +36,12 @@ public class BookingController : Controller
         return _userManager.GetUserId(User)!;
     }
 
+    // Only the owner of the booking or an admin can edit, cancel or delete it
+    private bool CanManageBooking(Booking booking)
+    {
+        return booking.UserId == GetCurrentUserId() || User.IsInRole("Admin");
+    }
+
     // The ViewModel with the booking and the list of rooms for the dropdown
     private async Task<BookingFormViewModel> CreateBookingFormViewModel(Booking booking)
     {
@@ -141,6 +147,18 @@ public class BookingController : Controller
             return NotFound();
         }
 
+        if (!CanManageBooking(booking))
+        {
+            _logger.LogWarning("User {UserId} tried to edit booking {BookingId} without permission.", GetCurrentUserId(), id);
+            return Forbid();
+        }
+
+        if (!_bookingService.CanBeChanged(booking))
+        {
+            TempData["Error"] = "A cancelled booking, or a booking that has already started, cannot be edited.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
         return View(await CreateBookingFormViewModel(booking));
     }
 
@@ -158,6 +176,19 @@ public class BookingController : Controller
         {
             _logger.LogWarning("Booking {BookingId} was not found.", id);
             return NotFound();
+        }
+
+        // Checked on the server too, because a request can be sent without using the form
+        if (!CanManageBooking(existing))
+        {
+            _logger.LogWarning("User {UserId} tried to edit booking {BookingId} without permission.", GetCurrentUserId(), id);
+            return Forbid();
+        }
+
+        if (!_bookingService.CanBeChanged(existing))
+        {
+            TempData["Error"] = "A cancelled booking, or a booking that has already started, cannot be edited.";
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         // The owner of the booking does not change when it is edited
@@ -186,6 +217,7 @@ public class BookingController : Controller
                 existing.MaxParticipants = booking.MaxParticipants;
 
                 await _bookingRepository.Update(existing);
+                _logger.LogInformation("Booking {BookingId} was updated.", id);
                 return RedirectToAction(nameof(Details), new { id });
             }
             catch (Exception e)
@@ -207,6 +239,18 @@ public class BookingController : Controller
         {
             _logger.LogWarning("Booking {BookingId} was not found.", id);
             return NotFound();
+        }
+
+        if (!CanManageBooking(booking))
+        {
+            _logger.LogWarning("User {UserId} tried to cancel booking {BookingId} without permission.", GetCurrentUserId(), id);
+            return Forbid();
+        }
+
+        if (!_bookingService.CanBeChanged(booking))
+        {
+            TempData["Error"] = "This booking is already cancelled or has already started.";
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         try
@@ -234,6 +278,12 @@ public class BookingController : Controller
             return NotFound();
         }
 
+        if (!CanManageBooking(booking))
+        {
+            _logger.LogWarning("User {UserId} tried to delete booking {BookingId} without permission.", GetCurrentUserId(), id);
+            return Forbid();
+        }
+
         return View(booking);
     }
 
@@ -247,9 +297,16 @@ public class BookingController : Controller
             return NotFound();
         }
 
+        if (!CanManageBooking(booking))
+        {
+            _logger.LogWarning("User {UserId} tried to delete booking {BookingId} without permission.", GetCurrentUserId(), id);
+            return Forbid();
+        }
+
         try
         {
             await _bookingRepository.Delete(id);
+            _logger.LogInformation("Booking {BookingId} was deleted.", id);
         }
         catch (Exception e)
         {
@@ -257,6 +314,6 @@ public class BookingController : Controller
             ModelState.AddModelError(string.Empty, "An error occurred while deleting the booking. Please try again later.");
             return View("Delete", booking);
         }
-        return RedirectToAction(nameof(Table));
+        return RedirectToAction(nameof(MyBookings));
     }
 }
