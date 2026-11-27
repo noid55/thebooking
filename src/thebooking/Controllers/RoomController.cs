@@ -45,13 +45,38 @@ public class RoomController : Controller
         };
     }
 
-    public async Task<IActionResult> Table()
+    // Multi-parameter search: building, minimum capacity and equipment.
+    // Empty search fields are ignored, so without any search all rooms are shown.
+    public async Task<IActionResult> Table(int? buildingId, int? minCapacity, List<int> equipmentIds)
     {
-        _logger.LogInformation("The study room table was accessed.");
+        _logger.LogInformation("Room search: building {BuildingId}, min capacity {MinCapacity}, equipment {EquipmentIds}.",
+            buildingId, minCapacity, string.Join(",", equipmentIds));
 
-        var rooms = await _roomRepository.GetAll();
-        ViewBag.CurrentViewName = "List of Rooms";
-        return View(rooms);
+        var rooms = await _roomRepository.Search(buildingId, minCapacity, equipmentIds);
+        var buildings = await _buildingRepository.GetAll();
+        var equipment = await _equipmentRepository.GetAll();
+
+        var viewModel = new RoomSearchViewModel
+        {
+            Rooms = rooms,
+            BuildingId = buildingId,
+            MinCapacity = minCapacity,
+            EquipmentIds = equipmentIds,
+            BuildingSelectList = buildings.Select(b => new SelectListItem
+            {
+                Value = b.BuildingId.ToString(),
+                Text = b.Name,
+                Selected = b.BuildingId == buildingId
+            }).ToList(),
+            EquipmentSelectList = equipment.Select(e => new SelectListItem
+            {
+                Value = e.EquipmentId.ToString(),
+                Text = e.Name,
+                Selected = equipmentIds.Contains(e.EquipmentId)
+            }).ToList()
+        };
+
+        return View(viewModel);
     }
 
     public async Task<IActionResult> Details(int id)

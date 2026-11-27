@@ -50,7 +50,7 @@ else
                     }
                 </td>
                 <td>
-                                        @* Edit and Delete are only shown to the owner of the booking or an admin *@
+                    @* Edit and Delete are only shown to the owner of the booking or an admin *@
                     @if (booking.UserId == currentUserId || isAdmin)
                     {
                         @* Edit is hidden when the booking is cancelled or has already started (same rule as BookingService.CanBeChanged) *@
