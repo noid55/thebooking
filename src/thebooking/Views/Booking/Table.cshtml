@@ -50,10 +50,14 @@ else
                     }
                 </td>
                 <td>
-                    @* Edit and Delete are only shown to the owner of the booking or an admin *@
+                                        @* Edit and Delete are only shown to the owner of the booking or an admin *@
                     @if (booking.UserId == currentUserId || isAdmin)
                     {
-                        <a asp-action="Edit" asp-route-id="@booking.BookingId" class="btn btn-primary btn-sm">Edit</a>
+                        @* Edit is hidden when the booking is cancelled or has already started (same rule as BookingService.CanBeChanged) *@
+                        @if (booking.Status == BookingStatus.Confirmed && booking.StartTime > DateTime.Now)
+                        {
+                            <a asp-action="Edit" asp-route-id="@booking.BookingId" class="btn btn-primary btn-sm">Edit</a>
+                        }
                         <a asp-action="Delete" asp-route-id="@booking.BookingId" class="btn btn-danger btn-sm">Delete</a>
                     }
                 </td>

@@ -3,7 +3,7 @@ using thebooking.Models;
 
 namespace thebooking.Services;
 
-// The domain rules for booking a study session
+// The domain rules for booking and joining study sessions
 public class BookingService : IBookingService
 {
     private static readonly TimeSpan OpeningTime = new(8, 0, 0);
@@ -12,12 +12,15 @@ public class BookingService : IBookingService
     private static readonly TimeSpan MaxDuration = TimeSpan.FromHours(4);
 
     private readonly IBookingRepository _bookingRepository;
-    private readonly IRoomRepository _roomRepository; // Used to check the room's capacity
+    private readonly IRoomRepository _roomRepository;                   // Used to check the room's capacity
+    private readonly IParticipationRepository _participationRepository; // Used for the join rules
 
-    public BookingService(IBookingRepository bookingRepository, IRoomRepository roomRepository)
+    public BookingService(IBookingRepository bookingRepository, IRoomRepository roomRepository,
+        IParticipationRepository participationRepository)
     {
         _bookingRepository = bookingRepository;
         _roomRepository = roomRepository;
+        _participationRepository = participationRepository;
     }
 
     public async Task<List<string>> ValidateBooking(Booking booking)
@@ -79,12 +82,64 @@ public class BookingService : IBookingService
         }
 
         return errors;
-    }     
+    }
+
     // Rule 8: a cancelled booking, or a booking that has already started, cannot be changed
     public bool CanBeChanged(Booking booking)
     {
         return booking.Status == BookingStatus.Confirmed && booking.StartTime > DateTime.Now;
     }
-        
-   
+
+    // Rule 9: the rules for joining a study session
+    public async Task<List<string>> ValidateJoin(Booking booking, string userId)
+    {
+        var errors = new List<string>();
+
+        // The owner is already part of the session
+        if (booking.UserId == userId)
+        {
+            errors.Add("You cannot join your own session.");
+            return errors;
+        }
+
+        // Only open sessions can be joined
+        if (!booking.IsOpen)
+        {
+            errors.Add("This session is private.");
+        }
+
+        // Cannot join a session that is cancelled or has already started
+        if (!CanBeChanged(booking))
+        {
+            errors.Add("You cannot join a session that is cancelled or has already started.");
+        }
+
+        // A student can only join the same session once
+        if (await _participationRepository.IsParticipant(booking.BookingId, userId))
+        {
+            errors.Add("You have already joined this session.");
+        }
+
+        // The session is full when participants + the owner reach MaxParticipants
+        var participantCount = await _participationRepository.CountForBooking(booking.BookingId);
+        if (participantCount + 1 >= booking.MaxParticipants)
+        {
+            errors.Add("This session is full.");
+        }
+
+        // The student cannot join if they have their own booking at the same time
+        if (await _bookingRepository.HasUserOverlap(userId, booking.StartTime, booking.EndTime))
+        {
+            errors.Add("You have your own booking at the same time.");
+        }
+
+        return errors;
+    }
+
+    // Rule 10: only the owner and the participants can leave messages
+    public async Task<bool> CanPostMessage(Booking booking, string userId)
+    {
+        return booking.UserId == userId ||
+               await _participationRepository.IsParticipant(booking.BookingId, userId);
+    }
 }

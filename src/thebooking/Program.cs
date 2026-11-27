@@ -40,8 +40,11 @@ builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IBuildingRepository, BuildingRepository>();
 builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IParticipationRepository, ParticipationRepository>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 // Service layer with the domain rules for booking
 builder.Services.AddScoped<IBookingService, BookingService>();
+
 
 // Identity with roles, so [Authorize(Roles = "Admin")] can be used
 builder.Services.AddDefaultIdentity<IdentityUser>(options => {

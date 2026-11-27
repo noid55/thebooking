@@ -15,15 +15,18 @@ public class BookingController : Controller
 {
     private readonly IBookingRepository _bookingRepository;
     private readonly IRoomRepository _roomRepository;
+    private readonly IParticipationRepository _participationRepository;
     private readonly IBookingService _bookingService;
     private readonly UserManager<IdentityUser> _userManager; // Used to find the logged-in user
     private readonly ILogger<BookingController> _logger;
 
     public BookingController(IBookingRepository bookingRepository, IRoomRepository roomRepository,
-        IBookingService bookingService, UserManager<IdentityUser> userManager, ILogger<BookingController> logger)
+        IParticipationRepository participationRepository, IBookingService bookingService,
+        UserManager<IdentityUser> userManager, ILogger<BookingController> logger)
     {
         _bookingRepository = bookingRepository;
         _roomRepository = roomRepository;
+        _participationRepository = participationRepository;
         _bookingService = bookingService;
         _userManager = userManager;
         _logger = logger;
@@ -78,6 +81,8 @@ public class BookingController : Controller
         return View("Table", bookings);
     }
 
+    // Shows the booking, the participants and the messages.
+    // The ViewModel tells the view what the logged-in user is allowed to do.
     public async Task<IActionResult> Details(int id)
     {
         var booking = await _bookingRepository.GetBookingById(id);
@@ -87,7 +92,26 @@ public class BookingController : Controller
             return NotFound();
         }
 
-        return View(booking);
+        var userId = GetCurrentUserId();
+        var joinErrors = await _bookingService.ValidateJoin(booking, userId);
+        var canPostMessage = await _bookingService.CanPostMessage(booking, userId);
+
+        var viewModel = new BookingDetailsViewModel
+        {
+            Booking = booking,
+            CurrentUserId = userId,
+            IsAdmin = User.IsInRole("Admin"),
+            CanManage = CanManageBooking(booking),
+            IsParticipant = await _participationRepository.IsParticipant(id, userId),
+            CanJoin = joinErrors.Count == 0,
+            JoinErrors = joinErrors,
+            CanPostMessage = canPostMessage,
+            // Messages are private: only the owner, the participants and an admin can read them
+            CanSeeMessages = canPostMessage || User.IsInRole("Admin"),
+            NewMessage = new Message { BookingId = id }
+        };
+
+        return View(viewModel);
     }
 
     // roomId is optional: it comes from the "Book this room" button on Room Details
@@ -228,6 +252,72 @@ public class BookingController : Controller
         }
 
         return View(await CreateBookingFormViewModel(booking));
+    }
+
+    // The logged-in student joins an open study session
+    [HttpPost]
+    public async Task<IActionResult> Join(int id)
+    {
+        var booking = await _bookingRepository.GetBookingById(id);
+        if (booking == null)
+        {
+            _logger.LogWarning("Booking {BookingId} was not found.", id);
+            return NotFound();
+        }
+
+        var userId = GetCurrentUserId();
+
+        // The join rules are checked on the server, even though the button is hidden when joining is not allowed
+        var errors = await _bookingService.ValidateJoin(booking, userId);
+        if (errors.Count > 0)
+        {
+            _logger.LogWarning("User {UserId} could not join booking {BookingId}: {Errors}", userId, id, string.Join(" ", errors));
+            TempData["Error"] = string.Join(" ", errors);
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        try
+        {
+            await _participationRepository.Create(new Participation { BookingId = id, UserId = userId });
+            _logger.LogInformation("User {UserId} joined booking {BookingId}.", userId, id);
+            TempData["Success"] = "You have joined the study session.";
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "An error occurred while user {UserId} tried to join booking {BookingId}.", userId, id);
+            TempData["Error"] = "You could not join the session. Please try again later.";
+        }
+
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    // The logged-in student leaves a study session they have joined
+    [HttpPost]
+    public async Task<IActionResult> Leave(int id)
+    {
+        var userId = GetCurrentUserId();
+
+        try
+        {
+            var removed = await _participationRepository.Delete(id, userId);
+            if (removed)
+            {
+                _logger.LogInformation("User {UserId} left booking {BookingId}.", userId, id);
+                TempData["Success"] = "You have left the study session.";
+            }
+            else
+            {
+                _logger.LogWarning("User {UserId} tried to leave booking {BookingId} without being a participant.", userId, id);
+                TempData["Error"] = "You are not a participant in this session.";
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "An error occurred while user {UserId} tried to leave booking {BookingId}.", userId, id);
+            TempData["Error"] = "You could not leave the session. Please try again later.";
+        }
+
+        return RedirectToAction(nameof(Details), new { id });
     }
 
     // The booking is set to Cancelled; the row itself is not deleted
