@@ -8,5 +8,11 @@ namespace thebooking.Controllers
         {
             return View();
         }
+
+        // Shown when a logged-in user tries to do something they do not have permission to do
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
     }
 }

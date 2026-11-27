@@ -1,5 +1,13 @@
+@using Microsoft.AspNetCore.Identity
 @using thebooking.Models
 @model IEnumerable<Booking>
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    var currentUserId = UserManager.GetUserId(User);
+    var isAdmin = User.IsInRole("Admin");
+}
+
 <h1>@ViewBag.CurrentViewName</h1>
 <a asp-action="Create" class="btn btn-primary">Book a room</a>
 
@@ -42,8 +50,12 @@ else
                     }
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@booking.BookingId" class="btn btn-primary btn-sm">Edit</a>
-                    <a asp-action="Delete" asp-route-id="@booking.BookingId" class="btn btn-danger btn-sm">Delete</a>
+                    @* Edit and Delete are only shown to the owner of the booking or an admin *@
+                    @if (booking.UserId == currentUserId || isAdmin)
+                    {
+                        <a asp-action="Edit" asp-route-id="@booking.BookingId" class="btn btn-primary btn-sm">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@booking.BookingId" class="btn btn-danger btn-sm">Delete</a>
+                    }
                 </td>
             </tr>
         }

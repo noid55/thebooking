@@ -13,6 +13,14 @@
         "jquery.min.js",
         "jquery.js"
       ]
+    },
+    {
+      "library": "jquery-validate@1.22.1",
+      "destination": "wwwroot/lib/jquery-validation/"
+    },
+    {
+      "library": "jquery-validation-unobtrusive@4.0.0",
+      "destination": "wwwroot/lib/jquery-validation-unobtrusive/"
     }
   ]
 }
