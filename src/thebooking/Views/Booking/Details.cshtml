@@ -1,5 +1,11 @@
 @using thebooking.Models
-@model Booking
+@model thebooking.ViewModels.BookingDetailsViewModel
+
+@{
+    var booking = Model.Booking;
+    // The owner counts as one of the participants
+    var participantCount = (booking.Participations?.Count ?? 0) + 1;
+}
 
 <h2>Booking Details</h2>
 
@@ -7,39 +13,156 @@
 {
     <div class="alert alert-danger">@TempData["Error"]</div>
 }
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
 
 <div>
     <dl class="row">
         <dt class="col-sm-2">Booking Id</dt>
-        <dd class="col-sm-10">@Model.BookingId</dd>
+        <dd class="col-sm-10">@booking.BookingId</dd>
 
         <dt class="col-sm-2">Room</dt>
-        <dd class="col-sm-10">@Model.Room?.Name (@Model.Room?.Building?.Name)</dd>
+        <dd class="col-sm-10">@booking.Room?.Name (@booking.Room?.Building?.Name)</dd>
+
+        <dt class="col-sm-2">Course</dt>
+        <dd class="col-sm-10">@booking.Course</dd>
 
         <dt class="col-sm-2">Topic</dt>
-        <dd class="col-sm-10">@Model.Topic</dd>
+        <dd class="col-sm-10">@booking.Topic</dd>
 
         <dt class="col-sm-2">Start time</dt>
-        <dd class="col-sm-10">@Model.StartTime.ToString("dd.MM.yyyy HH:mm")</dd>
+        <dd class="col-sm-10">@booking.StartTime.ToString("dd.MM.yyyy HH:mm")</dd>
 
         <dt class="col-sm-2">End time</dt>
-        <dd class="col-sm-10">@Model.EndTime.ToString("dd.MM.yyyy HH:mm")</dd>
+        <dd class="col-sm-10">@booking.EndTime.ToString("dd.MM.yyyy HH:mm")</dd>
+
+        <dt class="col-sm-2">Booked by</dt>
+        <dd class="col-sm-10">@booking.User?.UserName</dd>
+
+        @* Conditional rendering (ternary): shows whether the session is open or private *@
+        <dt class="col-sm-2">Open</dt>
+        <dd class="col-sm-10">@(booking.IsOpen ? "Yes, other students can join" : "No, private session")</dd>
 
         <dt class="col-sm-2">Status</dt>
         <dd class="col-sm-10">
-            <span class="badge @(Model.Status == BookingStatus.Confirmed ? "bg-success" : "bg-secondary")">@Model.Status</span>
+            <span class="badge @(booking.Status == BookingStatus.Confirmed ? "bg-success" : "bg-secondary")">@booking.Status</span>
         </dd>
 
         <dt class="col-sm-2">Created</dt>
-        <dd class="col-sm-10">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</dd>
+        <dd class="col-sm-10">@booking.CreatedAt.ToString("dd.MM.yyyy HH:mm")</dd>
     </dl>
 
-    @* can only be cancelled if the booking is confirmed and has not started yet *@
-    @if (Model.Status == BookingStatus.Confirmed && Model.StartTime > DateTime.Now)
+    @* Edit and cancel are only shown to the owner or an admin, and only if the booking is confirmed and has not started *@
+    @if (Model.CanManage && booking.Status == BookingStatus.Confirmed && booking.StartTime > DateTime.Now)
     {
-        <form asp-action="Cancel" asp-route-id="@Model.BookingId" method="post" class="d-inline">
+        <a asp-action="Edit" asp-route-id="@booking.BookingId" class="btn btn-primary">Edit</a>
+        <form asp-action="Cancel" asp-route-id="@booking.BookingId" method="post" class="d-inline">
             <button type="submit" class="btn btn-warning">Cancel booking</button>
         </form>
     }
+    @if (Model.CanManage)
+    {
+        <a asp-action="Delete" asp-route-id="@booking.BookingId" class="btn btn-danger">Delete</a>
+    }
     <a asp-action="MyBookings" class="btn btn-secondary">Back to My Bookings</a>
 </div>
+
+@* ---------- Participants ---------- *@
+<h3 class="mt-4">Participants (@participantCount / @booking.MaxParticipants)</h3>
+<ul class="list-group mb-3">
+    <li class="list-group-item">
+        @booking.User?.UserName <span class="badge bg-primary">Owner</span>
+    </li>
+    @foreach (var participation in booking.Participations ?? new List<Participation>())
+    {
+        <li class="list-group-item">
+            @participation.User?.UserName
+            <small class="text-muted">joined @participation.JoinedAt.ToString("dd.MM.yyyy HH:mm")</small>
+        </li>
+    }
+</ul>
+
+@* Join is shown when all join rules are OK; Leave is shown to students who have joined.
+   Otherwise the first reason from BookingService is shown, so the user knows why they cannot join. *@
+@if (Model.CanJoin)
+{
+    <form asp-action="Join" asp-route-id="@booking.BookingId" method="post">
+        <button type="submit" class="btn btn-success">Join this session</button>
+    </form>
+}
+else if (Model.IsParticipant)
+{
+    <form asp-action="Leave" asp-route-id="@booking.BookingId" method="post">
+        <button type="submit" class="btn btn-outline-danger">Leave this session</button>
+    </form>
+}
+else if (booking.UserId != Model.CurrentUserId && Model.JoinErrors.Any())
+{
+    <p class="text-muted">You cannot join this session: @Model.JoinErrors.First()</p>
+}
+
+@* ---------- Messages ---------- *@
+<h3 class="mt-4">Messages</h3>
+
+@* Messages are private to the session: only the owner, the participants and an admin can see them *@
+@if (!Model.CanSeeMessages)
+{
+    <p class="text-muted">
+        Messages are only visible to the participants of this session.
+        @(Model.CanJoin ? "Join the session to see and leave messages." : "")
+    </p>
+}
+else
+{
+    @if (booking.Messages == null || !booking.Messages.Any())
+    {
+        <p class="text-muted">No messages yet.</p>
+    }
+    else
+    {
+        @foreach (var message in booking.Messages.OrderBy(m => m.CreatedAt))
+        {
+            <div class="card mb-2">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-1 text-muted">
+                        @message.User?.UserName · @message.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                    </h6>
+                    <p class="card-text">@message.Text</p>
+
+                    @* The author can edit; the author or an admin can delete *@
+                    @if (message.UserId == Model.CurrentUserId)
+                    {
+                        <a asp-controller="Message" asp-action="Edit" asp-route-id="@message.MessageId" class="btn btn-sm btn-outline-primary">Edit</a>
+                    }
+                    @if (message.UserId == Model.CurrentUserId || Model.IsAdmin)
+                    {
+                        <form asp-controller="Message" asp-action="Delete" asp-route-id="@message.MessageId" method="post" class="d-inline"
+                              onsubmit="return confirm('Delete this message?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        }
+    }
+
+    @* Only the owner and the participants can write messages *@
+    @if (Model.CanPostMessage)
+    {
+        <form asp-controller="Message" asp-action="Create" method="post" class="mt-3">
+            <input type="hidden" asp-for="NewMessage.BookingId" />
+            <div class="form-group">
+                <label asp-for="NewMessage.Text">Write a message</label>
+                <textarea asp-for="NewMessage.Text" class="form-control" rows="2"></textarea>
+                <span asp-validation-for="NewMessage.Text" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Send</button>
+        </form>
+    }
+}
+
+@section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }

@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using thebooking.DAL;
@@ -7,30 +9,43 @@ using thebooking.ViewModels;
 
 namespace thebooking.Controllers;
 
+// All booking pages require a logged-in user, because every booking belongs to a user
+[Authorize]
 public class BookingController : Controller
 {
     private readonly IBookingRepository _bookingRepository;
     private readonly IRoomRepository _roomRepository;
+    private readonly IParticipationRepository _participationRepository;
     private readonly IBookingService _bookingService;
+    private readonly UserManager<IdentityUser> _userManager; // Used to find the logged-in user
     private readonly ILogger<BookingController> _logger;
 
     public BookingController(IBookingRepository bookingRepository, IRoomRepository roomRepository,
-        IBookingService bookingService, ILogger<BookingController> logger)
+        IParticipationRepository participationRepository, IBookingService bookingService,
+        UserManager<IdentityUser> userManager, ILogger<BookingController> logger)
     {
         _bookingRepository = bookingRepository;
         _roomRepository = roomRepository;
+        _participationRepository = participationRepository;
         _bookingService = bookingService;
+        _userManager = userManager;
         _logger = logger;
     }
 
-    // MIDLERTIDIG til innlogging er på plass. alle bookinger lagres på en test-bruker nå.
-    // Skal byttes til: User.FindFirstValue(ClaimTypes.NameIdentifier)
+    // Returns the ID of the logged-in user.
+    // [Authorize] on the controller guarantees that someone is logged in here.
     private string GetCurrentUserId()
     {
-        return "seed-user-1";
+        return _userManager.GetUserId(User)!;
     }
 
-    //ViewModelen med bookingen og listen over rom til nedtrekkslisten
+    // Only the owner of the booking or an admin can edit, cancel or delete it
+    private bool CanManageBooking(Booking booking)
+    {
+        return booking.UserId == GetCurrentUserId() || User.IsInRole("Admin");
+    }
+
+    // The ViewModel with the booking and the list of rooms for the dropdown
     private async Task<BookingFormViewModel> CreateBookingFormViewModel(Booking booking)
     {
         var rooms = await _roomRepository.GetAll();
@@ -45,7 +60,7 @@ public class BookingController : Controller
         };
     }
 
-    // Alle bookinger (for admin)
+    // All bookings (for admin)
     public async Task<IActionResult> Table()
     {
         _logger.LogInformation("The booking table was accessed.");
@@ -55,7 +70,7 @@ public class BookingController : Controller
         return View(bookings);
     }
 
-    // Bookingene til innlogget bruker (My bookings). Bruker samme view som Table.
+    // The bookings of the logged-in user (My bookings). Uses the same view as Table.
     public async Task<IActionResult> MyBookings()
     {
         var userId = GetCurrentUserId();
@@ -66,6 +81,8 @@ public class BookingController : Controller
         return View("Table", bookings);
     }
 
+    // Shows the booking, the participants and the messages.
+    // The ViewModel tells the view what the logged-in user is allowed to do.
     public async Task<IActionResult> Details(int id)
     {
         var booking = await _bookingRepository.GetBookingById(id);
@@ -75,14 +92,33 @@ public class BookingController : Controller
             return NotFound();
         }
 
-        return View(booking);
+        var userId = GetCurrentUserId();
+        var joinErrors = await _bookingService.ValidateJoin(booking, userId);
+        var canPostMessage = await _bookingService.CanPostMessage(booking, userId);
+
+        var viewModel = new BookingDetailsViewModel
+        {
+            Booking = booking,
+            CurrentUserId = userId,
+            IsAdmin = User.IsInRole("Admin"),
+            CanManage = CanManageBooking(booking),
+            IsParticipant = await _participationRepository.IsParticipant(id, userId),
+            CanJoin = joinErrors.Count == 0,
+            JoinErrors = joinErrors,
+            CanPostMessage = canPostMessage,
+            // Messages are private: only the owner, the participants and an admin can read them
+            CanSeeMessages = canPostMessage || User.IsInRole("Admin"),
+            NewMessage = new Message { BookingId = id }
+        };
+
+        return View(viewModel);
     }
 
-    // roomId er valgfri: kommer fra "Book this room"-knappen på Room Details
+    // roomId is optional: it comes from the "Book this room" button on Room Details
     [HttpGet]
     public async Task<IActionResult> Create(int? roomId)
     {
-        var start = DateTime.Today.AddDays(1).AddHours(10); // forslag: i morgen kl. 10
+        var start = DateTime.Today.AddDays(1).AddHours(10); // Suggestion: tomorrow at 10:00
         var booking = new Booking
         {
             RoomId = roomId ?? 0,
@@ -97,7 +133,7 @@ public class BookingController : Controller
     {
         booking.UserId = GetCurrentUserId();
 
-        // domenereglene sjekkes bare når feltene i seg selv er gyldige
+        // The domain rules are only checked when the fields themselves are valid
         if (ModelState.IsValid)
         {
             var errors = await _bookingService.ValidateBooking(booking);
@@ -135,6 +171,18 @@ public class BookingController : Controller
             return NotFound();
         }
 
+        if (!CanManageBooking(booking))
+        {
+            _logger.LogWarning("User {UserId} tried to edit booking {BookingId} without permission.", GetCurrentUserId(), id);
+            return Forbid();
+        }
+
+        if (!_bookingService.CanBeChanged(booking))
+        {
+            TempData["Error"] = "A cancelled booking, or a booking that has already started, cannot be edited.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
         return View(await CreateBookingFormViewModel(booking));
     }
 
@@ -154,7 +202,20 @@ public class BookingController : Controller
             return NotFound();
         }
 
-        // eieren av bookingen endres ikke ved redigering
+        // Checked on the server too, because a request can be sent without using the form
+        if (!CanManageBooking(existing))
+        {
+            _logger.LogWarning("User {UserId} tried to edit booking {BookingId} without permission.", GetCurrentUserId(), id);
+            return Forbid();
+        }
+
+        if (!_bookingService.CanBeChanged(existing))
+        {
+            TempData["Error"] = "A cancelled booking, or a booking that has already started, cannot be edited.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        // The owner of the booking does not change when it is edited
         booking.UserId = existing.UserId;
 
         if (ModelState.IsValid)
@@ -170,13 +231,17 @@ public class BookingController : Controller
         {
             try
             {
-                // bare feltene som kan redigeres kopieres over (CreatedAt, UserId og Status beholdes)
+                // Only the editable fields are copied over (CreatedAt, UserId and Status are kept)
                 existing.RoomId = booking.RoomId;
+                existing.Course = booking.Course;
                 existing.Topic = booking.Topic;
                 existing.StartTime = booking.StartTime;
                 existing.EndTime = booking.EndTime;
+                existing.IsOpen = booking.IsOpen;
+                existing.MaxParticipants = booking.MaxParticipants;
 
                 await _bookingRepository.Update(existing);
+                _logger.LogInformation("Booking {BookingId} was updated.", id);
                 return RedirectToAction(nameof(Details), new { id });
             }
             catch (Exception e)
@@ -189,7 +254,73 @@ public class BookingController : Controller
         return View(await CreateBookingFormViewModel(booking));
     }
 
-    //bookingen settes til Cancelled, bookingen/raden slettes ikke
+    // The logged-in student joins an open study session
+    [HttpPost]
+    public async Task<IActionResult> Join(int id)
+    {
+        var booking = await _bookingRepository.GetBookingById(id);
+        if (booking == null)
+        {
+            _logger.LogWarning("Booking {BookingId} was not found.", id);
+            return NotFound();
+        }
+
+        var userId = GetCurrentUserId();
+
+        // The join rules are checked on the server, even though the button is hidden when joining is not allowed
+        var errors = await _bookingService.ValidateJoin(booking, userId);
+        if (errors.Count > 0)
+        {
+            _logger.LogWarning("User {UserId} could not join booking {BookingId}: {Errors}", userId, id, string.Join(" ", errors));
+            TempData["Error"] = string.Join(" ", errors);
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        try
+        {
+            await _participationRepository.Create(new Participation { BookingId = id, UserId = userId });
+            _logger.LogInformation("User {UserId} joined booking {BookingId}.", userId, id);
+            TempData["Success"] = "You have joined the study session.";
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "An error occurred while user {UserId} tried to join booking {BookingId}.", userId, id);
+            TempData["Error"] = "You could not join the session. Please try again later.";
+        }
+
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    // The logged-in student leaves a study session they have joined
+    [HttpPost]
+    public async Task<IActionResult> Leave(int id)
+    {
+        var userId = GetCurrentUserId();
+
+        try
+        {
+            var removed = await _participationRepository.Delete(id, userId);
+            if (removed)
+            {
+                _logger.LogInformation("User {UserId} left booking {BookingId}.", userId, id);
+                TempData["Success"] = "You have left the study session.";
+            }
+            else
+            {
+                _logger.LogWarning("User {UserId} tried to leave booking {BookingId} without being a participant.", userId, id);
+                TempData["Error"] = "You are not a participant in this session.";
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "An error occurred while user {UserId} tried to leave booking {BookingId}.", userId, id);
+            TempData["Error"] = "You could not leave the session. Please try again later.";
+        }
+
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    // The booking is set to Cancelled; the row itself is not deleted
     [HttpPost]
     public async Task<IActionResult> Cancel(int id)
     {
@@ -198,6 +329,18 @@ public class BookingController : Controller
         {
             _logger.LogWarning("Booking {BookingId} was not found.", id);
             return NotFound();
+        }
+
+        if (!CanManageBooking(booking))
+        {
+            _logger.LogWarning("User {UserId} tried to cancel booking {BookingId} without permission.", GetCurrentUserId(), id);
+            return Forbid();
+        }
+
+        if (!_bookingService.CanBeChanged(booking))
+        {
+            TempData["Error"] = "This booking is already cancelled or has already started.";
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         try
@@ -225,6 +368,12 @@ public class BookingController : Controller
             return NotFound();
         }
 
+        if (!CanManageBooking(booking))
+        {
+            _logger.LogWarning("User {UserId} tried to delete booking {BookingId} without permission.", GetCurrentUserId(), id);
+            return Forbid();
+        }
+
         return View(booking);
     }
 
@@ -238,9 +387,16 @@ public class BookingController : Controller
             return NotFound();
         }
 
+        if (!CanManageBooking(booking))
+        {
+            _logger.LogWarning("User {UserId} tried to delete booking {BookingId} without permission.", GetCurrentUserId(), id);
+            return Forbid();
+        }
+
         try
         {
             await _bookingRepository.Delete(id);
+            _logger.LogInformation("Booking {BookingId} was deleted.", id);
         }
         catch (Exception e)
         {
@@ -248,6 +404,6 @@ public class BookingController : Controller
             ModelState.AddModelError(string.Empty, "An error occurred while deleting the booking. Please try again later.");
             return View("Delete", booking);
         }
-        return RedirectToAction(nameof(Table));
+        return RedirectToAction(nameof(MyBookings));
     }
 }
