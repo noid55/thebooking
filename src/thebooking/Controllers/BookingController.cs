@@ -122,6 +122,15 @@ public class BookingController : Controller
         }
 
         var userId = GetCurrentUserId();
+        var isParticipant = await _participationRepository.IsParticipant(id, userId);
+
+        // Private sessions can only be seen by the owner, an admin and students who have already joined
+        if (!booking.IsOpen && !CanManageBooking(booking) && !isParticipant)
+        {
+            _logger.LogWarning("User {UserId} tried to open private booking {BookingId} without permission.", userId, id);
+            return Forbid();
+        }
+
         var joinErrors = await _bookingService.ValidateJoin(booking, userId);
         var canPostMessage = await _bookingService.CanPostMessage(booking, userId);
 
@@ -131,7 +140,7 @@ public class BookingController : Controller
             CurrentUserId = userId,
             IsAdmin = User.IsInRole("Admin"),
             CanManage = CanManageBooking(booking),
-            IsParticipant = await _participationRepository.IsParticipant(id, userId),
+            IsParticipant = isParticipant,
             CanJoin = joinErrors.Count == 0,
             JoinErrors = joinErrors,
             CanPostMessage = canPostMessage,
