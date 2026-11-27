@@ -28,8 +28,8 @@ export default function RoomListPage() {
 
   const filteredRooms = rooms.filter((room) =>
       room.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      room.building.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (room.description ?? '').toLowerCase().includes(searchQuery.toLowerCase())
+room.buildingName.toLowerCase().includes(searchQuery.toLowerCase()) ||  
+    (room.description ?? '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

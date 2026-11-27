@@ -60,7 +60,7 @@ export default function RoomTable({ rooms }: RoomTableProps) {
           {rooms.map((room, index) => (
               <tr key={room.roomId}>
                 <td>{room.name}</td>
-                <td>{room.building}</td>
+                <td>{room.buildingName}</td>
                 <td>{room.capacity}</td>
 
                 {showDescriptions && (

@@ -1,8 +1,10 @@
-import { useState } from 'react';
+
+import { useEffect, useState } from 'react';
 import type { SyntheticEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, Form } from 'react-bootstrap';
-import { Room } from '../types/room';
+import type { Room, Building } from '../types/room';
+import { getBuildings } from '../services/roomService';
 
 interface RoomFormProps {
   onRoomChanged: (newRoom: Room) => Promise<unknown> | void;
@@ -14,10 +16,18 @@ interface RoomFormProps {
 
 export default function RoomForm({ onRoomChanged, roomId, initialValues, error, submitting }: RoomFormProps) {
   const [name, setName] = useState<string>(initialValues?.name ?? '');
-  const [building, setBuilding] = useState<string>(initialValues?.building ?? '');
+  const [buildingId, setBuildingId] = useState<number>(initialValues?.buildingId ?? 0);
+  const [buildings, setBuildings] = useState<Building[]>([]);
+  const [buildingError, setBuildingError] = useState<string | null>(null);
   const [capacity, setCapacity] = useState<number>(initialValues?.capacity ?? 1);
   const [description, setDescription] = useState<string>(initialValues?.description ?? '');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getBuildings()
+      .then(setBuildings)
+      .catch(() => setBuildingError('Could not load buildings.'));
+  }, []);
 
   const onCancel = () => {
     navigate(-1);
@@ -25,7 +35,16 @@ export default function RoomForm({ onRoomChanged, roomId, initialValues, error, 
 
   const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const room: Room = { roomId, name, building, capacity, description };
+
+    const room: Room = {
+      roomId,
+      name,
+      buildingId,
+      buildingName: buildings.find(b => b.buildingId === buildingId)?.name ?? '',
+      capacity,
+      description
+    };
+
     await onRoomChanged(room);
   };
 
@@ -46,16 +65,21 @@ export default function RoomForm({ onRoomChanged, roomId, initialValues, error, 
 
       <Form.Group controlId="formRoomBuilding" className="mb-3">
         <Form.Label>Building</Form.Label>
-        <Form.Control
-          type="text"
-          placeholder="Enter building"
-          value={building}
-          onChange={(e) => setBuilding(e.target.value)}
+        <Form.Select
+          value={buildingId}
+          onChange={(e) => setBuildingId(Number(e.target.value))}
           required
-          pattern="[0-9a-zA-ZæøåÆØÅ. \-]{2,20}"
-          title="The building must be numbers or letters and between 2 to 20 characters."
-        />
+        >
+          <option value={0}>Select a building</option>
+          {buildings.map((building) => (
+            <option key={building.buildingId} value={building.buildingId}>
+              {building.name}
+            </option>
+          ))}
+        </Form.Select>
       </Form.Group>
+
+      {buildingError && <Alert variant="danger">{buildingError}</Alert>}
 
       <Form.Group controlId="formRoomCapacity" className="mb-3">
         <Form.Label>Capacity</Form.Label>
@@ -84,7 +108,7 @@ export default function RoomForm({ onRoomChanged, roomId, initialValues, error, 
 
       {error && <Alert variant="danger">{error}</Alert>}
 
-      <Button variant="primary" type="submit" disabled={submitting}>
+      <Button variant="primary" type="submit" disabled={submitting || buildings.length === 0}>
         {submitting ? 'Saving...' : roomId ? 'Update Room' : 'Create Room'}
       </Button>
       <Button variant="secondary" onClick={onCancel} className="ms-2" disabled={submitting}>
@@ -93,3 +117,4 @@ export default function RoomForm({ onRoomChanged, roomId, initialValues, error, 
     </Form>
   );
 }
+

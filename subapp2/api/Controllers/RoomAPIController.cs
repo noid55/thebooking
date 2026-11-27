@@ -21,60 +21,75 @@ public class RoomAPIController : ControllerBase
     [HttpGet("roomlist")]
     public async Task<IActionResult> RoomList()
     {
-        var rooms = await _db.Rooms.ToListAsync();
+        var rooms = await _db.Rooms
+            .Include(r => r.Building)
+            .ToListAsync();
+
         var dtos = rooms.Select(r => new RoomDto
         {
             RoomId = r.RoomId,
             Name = r.Name,
             Capacity = r.Capacity,
-            Building = r.Building,
+            BuildingId = r.BuildingId,
+            BuildingName = r.Building?.Name ?? string.Empty,
             Description = r.Description
         });
+
         return Ok(dtos);
     }
-[HttpPost("create")]
-public async Task<IActionResult> Create([FromBody] RoomDto roomDto)
-{
-    if (roomDto == null)
-    {
-        return BadRequest("Room data is missing.");
-    }
 
-    var room = new Room
+    [HttpPost("create")]
+    public async Task<IActionResult> Create([FromBody] RoomDto roomDto)
     {
-        Name = roomDto.Name,
-        Capacity = roomDto.Capacity,
-        Building = roomDto.Building,
-        Description = roomDto.Description
-    };
-
-    if (!TryValidateModel(room))
-    {
-        return ValidationProblem(ModelState);
-    }
-
-    try
-    {
-        await _db.Rooms.AddAsync(room);
-        await _db.SaveChangesAsync();
-
-        var createdRoom = new RoomDto
+        if (roomDto == null)
         {
-            RoomId = room.RoomId,
-            Name = room.Name,
-            Capacity = room.Capacity,
-            Building = room.Building,
-            Description = room.Description
+            return BadRequest("Room data is missing.");
+        }
+
+        var buildingExists = await _db.Buildings
+            .AnyAsync(b => b.BuildingId == roomDto.BuildingId);
+
+        if (!buildingExists)
+        {
+            return BadRequest("The selected building does not exist.");
+        }
+
+        var room = new Room
+        {
+            Name = roomDto.Name,
+            Capacity = roomDto.Capacity,
+            BuildingId = roomDto.BuildingId,
+            Description = roomDto.Description
         };
 
-        return StatusCode(201, createdRoom);
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Failed to create room.");
-        return StatusCode(500, "An error occurred while creating the room.");
+        if (!TryValidateModel(room))
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        try
+        {
+            await _db.Rooms.AddAsync(room);
+            await _db.SaveChangesAsync();
+
+            await _db.Entry(room).Reference(r => r.Building).LoadAsync();
+
+            var createdRoom = new RoomDto
+            {
+                RoomId = room.RoomId,
+                Name = room.Name,
+                Capacity = room.Capacity,
+                BuildingId = room.BuildingId,
+                BuildingName = room.Building?.Name ?? string.Empty,
+                Description = room.Description
+            };
+
+            return StatusCode(201, createdRoom);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to create room.");
+            return StatusCode(500, "An error occurred while creating the room.");
+        }
     }
 }
-}
-
-
