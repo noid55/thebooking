@@ -112,7 +112,8 @@ public class RoomController : Controller
             try
             {
                 await _roomRepository.Create(room);
-                 await _roomRepository.UpdateEquipment(room.RoomId, selectedEquipmentIds); //slik at utstyret lagres
+                await _roomRepository.UpdateEquipment(room.RoomId, selectedEquipmentIds); //slik at utstyret lagres
+                _logger.LogInformation("Room {RoomId} was created.", room.RoomId);
                 return RedirectToAction(nameof(Table));
             }
             catch (Exception e)
@@ -123,7 +124,7 @@ public class RoomController : Controller
         }
 
         return View(await CreateRoomFormViewModel(room, selectedEquipmentIds));
-    }    
+    }
 
     [HttpGet]
     [Authorize(Roles = "Admin")]
@@ -162,6 +163,7 @@ public class RoomController : Controller
             {
                 await _roomRepository.Update(room);
                 await _roomRepository.UpdateEquipment(room.RoomId, selectedEquipmentIds);
+                _logger.LogInformation("Room {RoomId} was updated.", room.RoomId);
                 return RedirectToAction(nameof(Table));
             }
             catch (Exception e)
@@ -202,6 +204,7 @@ public class RoomController : Controller
         try
         {
             await _roomRepository.Delete(id);
+            _logger.LogInformation("Room {RoomId} was deleted.", id);
         }
         catch (Exception e)
         {

@@ -1,10 +1,7 @@
 @model IEnumerable<thebooking.Models.Building>
+@* Only admins can open this page (see [Authorize(Roles = "Admin")] on BuildingController) *@
 <h1>@ViewBag.CurrentViewName</h1>
-@* Only admins can create, edit and delete buildings *@
-@if (User.IsInRole("Admin"))
-{
-    <a asp-action="Create" class="btn btn-primary">Create new building</a>
-}
+<a asp-action="Create" class="btn btn-primary">Create new building</a>
 <table class="table table-striped">
     <tr>
         <th>Id</th>
@@ -19,9 +16,11 @@
             <td>@building.BuildingId</td>
             <td><a asp-action="Details" asp-route-id="@building.BuildingId">@building.Name</a></td>
             <td>@building.Address</td>
-            <td>@(building.Rooms?.Count ?? 0)</td> @*antall rom i bygget*@
+            <td>@(building.Rooms?.Count ?? 0)</td> @* number of rooms in the building *@
+            <td>
                 <a asp-action="Edit" asp-route-id="@building.BuildingId" class="btn btn-primary btn-sm">Edit</a>
                 <a asp-action="Delete" asp-route-id="@building.BuildingId" class="btn btn-danger btn-sm">Delete</a>
+            </td>
         </tr>
     }
 </table>

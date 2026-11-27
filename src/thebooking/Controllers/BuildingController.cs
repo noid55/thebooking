@@ -50,6 +50,7 @@ public class BuildingController : Controller
             try
             {
                 await _buildingRepository.Create(building);
+                _logger.LogInformation("Building {BuildingId} was created.", building.BuildingId);
                 return RedirectToAction(nameof(Table));
             }
             catch (Exception e)
@@ -88,6 +89,7 @@ public class BuildingController : Controller
             try
             {
                 await _buildingRepository.Update(building);
+                _logger.LogInformation("Building {BuildingId} was updated.", building.BuildingId);
                 return RedirectToAction(nameof(Table));
             }
             catch (Exception e)
@@ -126,6 +128,7 @@ public class BuildingController : Controller
         try
         {
             await _buildingRepository.Delete(id);
+            _logger.LogInformation("Building {BuildingId} was deleted.", id);
         }
         catch (Exception e)
         {

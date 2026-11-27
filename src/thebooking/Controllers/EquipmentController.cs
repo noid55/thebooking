@@ -52,6 +52,7 @@ public class EquipmentController : Controller
             try
             {
                 await _equipmentRepository.Create(equipment);
+                _logger.LogInformation("Equipment {EquipmentId} was created.", equipment.EquipmentId);
                 return RedirectToAction(nameof(Table));
             }
             catch (Exception e)
@@ -91,6 +92,7 @@ public class EquipmentController : Controller
             try
             {
                 await _equipmentRepository.Update(equipment);
+                _logger.LogInformation("Equipment {EquipmentId} was updated.", equipment.EquipmentId);
                 return RedirectToAction(nameof(Table));
             }
             catch (Exception e)
@@ -132,6 +134,7 @@ public class EquipmentController : Controller
         {
             // Koblingene i RoomEquipment slettes automatisk (Cascade). Rommene blir stående.
             await _equipmentRepository.Delete(id);
+            _logger.LogInformation("Equipment {EquipmentId} was deleted.", id);
         }
         catch (Exception e)
         {

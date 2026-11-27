@@ -43,7 +43,7 @@ public class BookingServiceTests
         };
     }
 
-    // ---------- Positive tests ----------
+    // Positive tests
 
     [Fact]
     public async Task ValidateBooking_WhenBookingIsValid_ReturnsNoErrors()
@@ -85,7 +85,7 @@ public class BookingServiceTests
         Assert.True(result);
     }
 
-    // ---------- Negative tests ----------
+    // Negative tests
 
     [Fact]
     public async Task ValidateBooking_WhenRoomIsAlreadyBooked_ReturnsOverlapError()

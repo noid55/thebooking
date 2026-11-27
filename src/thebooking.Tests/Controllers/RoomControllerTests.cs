@@ -29,7 +29,7 @@ public class RoomControllerTests
         return new Room { Name = "Grupperom 601", Capacity = 6, Description = "New test room", BuildingId = 1 };
     }
 
-    // ---------- Positive tests ----------
+    // Positive tests
 
     [Fact]
     public async Task Table_WhenRoomsExist_ReturnsViewResultWithRooms()
@@ -70,7 +70,7 @@ public class RoomControllerTests
         await _mockRoomRepository.Received(1).UpdateEquipment(room.RoomId, Arg.Any<List<int>>());
     }
 
-    // ---------- Negative tests ----------
+    // Negative tests
 
     [Fact]
     public async Task Create_WhenRepositoryThrows_ReturnsViewWithRoom()
