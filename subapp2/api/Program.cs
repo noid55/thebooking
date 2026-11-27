@@ -15,6 +15,8 @@ builder.Services.AddDbContext<BookingDbContext>(o =>
 // Repository (demo 6): kobler hvert interface til klassen som skal brukes (dependency injection).
 // Scoped = én instans per HTTP-forespørsel, samme levetid som DbContext-en.
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();
+builder.Services.AddScoped<IParticipationRepository, ParticipationRepository>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IBuildingRepository, BuildingRepository>();
 builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();

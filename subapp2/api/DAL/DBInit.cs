@@ -71,25 +71,9 @@ public static class DBInit
             context.SaveChanges();
         }
 
-        if (!context.Bookings.Any())
-        {
-            var tomorrow = DateTime.Today.AddDays(1);
-            var bookings = new List<Booking>
-            {
-                new Booking { RoomId = 1, Topic = "Study group DATA1500", UserId = "seed-user-1",
-                              StartTime = tomorrow.AddHours(10), EndTime = tomorrow.AddHours(12) },
-                new Booking { RoomId = 1, Topic = "Exam preparation",     UserId = "seed-user-2",
-                              StartTime = tomorrow.AddHours(12), EndTime = tomorrow.AddHours(14) },
-                new Booking { RoomId = 3, Topic = "Project meeting",      UserId = "seed-user-1",
-                              StartTime = tomorrow.AddHours(9),  EndTime = tomorrow.AddHours(11) },
-                new Booking { RoomId = 5, Topic = "Group presentation",   UserId = "seed-user-3",
-                              StartTime = tomorrow.AddDays(1).AddHours(13), EndTime = tomorrow.AddDays(1).AddHours(15) },
-                new Booking { RoomId = 2, Topic = "Cancelled meeting",    UserId = "seed-user-2",
-                              StartTime = tomorrow.AddHours(14), EndTime = tomorrow.AddHours(16),
-                              Status = BookingStatus.Cancelled },
-            };
-            context.AddRange(bookings);
-            context.SaveChanges();
-        }
+        // Bookings, participations and messages are not seeded in the API yet.
+        // Booking.UserId is a foreign key to AspNetUsers, so the seed users must be created first.
+        // That needs Identity (UserManager + roles) in the API, which comes with JWT auth (work package #6).
+        // Then copy the rest of DBInit from Subapp 1 (CreateStudentIfMissing + bookings).
     }
 }
