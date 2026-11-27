@@ -1,6 +1,6 @@
 @using Microsoft.AspNetCore.Identity
 @using thebooking.Models
-@model IEnumerable<Booking>
+@model thebooking.ViewModels.BookingsViewModel
 @inject UserManager<IdentityUser> UserManager
 
 @{
@@ -8,10 +8,10 @@
     var isAdmin = User.IsInRole("Admin");
 }
 
-<h1>@ViewBag.CurrentViewName</h1>
+<h1>@Model.CurrentViewName</h1>
 <a asp-action="Create" class="btn btn-primary">Book a room</a>
 
-@if (!Model.Any())
+@if (!Model.Bookings.Any())
 {
     <p>No bookings.</p>
 }
@@ -29,7 +29,7 @@ else
             <th>Status</th>
             <th></th>
         </tr>
-        @foreach (var booking in Model)
+        @foreach (var booking in Model.Bookings)
         {
             <tr>
                 <td>@booking.BookingId</td>

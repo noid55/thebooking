@@ -69,8 +69,8 @@ public class BookingController : Controller
         _logger.LogInformation("The booking table was accessed.");
 
         var bookings = await _bookingRepository.GetAll();
-        ViewBag.CurrentViewName = "All Bookings";
-        return View(bookings);
+        var bookingsViewModel = new BookingsViewModel(bookings, "All Bookings");
+        return View(bookingsViewModel);
     }
 
     // The bookings of the logged-in user (My bookings). Uses the same view as Table.
@@ -80,8 +80,8 @@ public class BookingController : Controller
         _logger.LogInformation("User {UserId} opened their bookings.", userId);
 
         var bookings = await _bookingRepository.GetBookingsForUser(userId);
-        ViewBag.CurrentViewName = "My Bookings";
-        return View("Table", bookings);
+        var bookingsViewModel = new BookingsViewModel(bookings, "My Bookings");
+        return View("Table", bookingsViewModel);
     }
 
 

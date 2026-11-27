@@ -1,6 +1,6 @@
-@model IEnumerable<thebooking.Models.Building>
+@model thebooking.ViewModels.BuildingsViewModel
 @* Only admins can open this page (see [Authorize(Roles = "Admin")] on BuildingController) *@
-<h1>@ViewBag.CurrentViewName</h1>
+<h1>@Model.CurrentViewName</h1>
 <a asp-action="Create" class="btn btn-primary">Create new building</a>
 <table class="table table-striped">
     <tr>
@@ -10,7 +10,7 @@
         <th>Rooms</th>
         <th></th>
     </tr>
-    @foreach (var building in Model)
+   @foreach (var building in Model.Buildings)
     {
         <tr>
             <td>@building.BuildingId</td>

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using thebooking.DAL;
 using thebooking.Models;
+using thebooking.ViewModels;
 
 namespace thebooking.Controllers;
 // Buildings are only managed by admins, so the whole controller is locked to the Admin role
@@ -22,8 +23,8 @@ public class BuildingController : Controller
         _logger.LogInformation("The building table was accessed.");
 
         var buildings = await _buildingRepository.GetAll();
-        ViewBag.CurrentViewName = "List of Buildings";
-        return View(buildings);
+        var buildingsViewModel = new BuildingsViewModel(buildings, "List of Buildings");
+        return View(buildingsViewModel);
     }
 
     public async Task<IActionResult> Details(int id)

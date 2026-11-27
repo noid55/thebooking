@@ -2,10 +2,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using thebooking.DAL;
 using thebooking.Models;
+using thebooking.ViewModels;
 
 namespace thebooking.Controllers;
 // Equipment is only managed by admins, so the whole controller is locked to the Admin role
-
+[Authorize(Roles = "Admin")]
 public class EquipmentController : Controller
 {
     private readonly IEquipmentRepository _equipmentRepository;
@@ -22,8 +23,8 @@ public class EquipmentController : Controller
         _logger.LogInformation("The equipment table was accessed.");
 
         var equipment = await _equipmentRepository.GetAll();
-        ViewBag.CurrentViewName = "List of Equipment";
-        return View(equipment);
+        var equipmentListViewModel = new EquipmentListViewModel(equipment, "List of Equipment");
+        return View(equipmentListViewModel);
     }
 
     public async Task<IActionResult> Details(int id)
