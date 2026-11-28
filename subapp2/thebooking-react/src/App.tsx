@@ -4,6 +4,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import Container from 'react-bootstrap/Container'
 import HomePage from './home/HomePage'
 import RoomListPage from './rooms/RoomListPage'
+import RoomUpdatePage from './rooms/RoomUpdatePage'
 import RoomCreatePage from './rooms/RoomCreatePage'
 import NavMenu from './shared/NavMenu'
 import './App.css'
@@ -20,6 +21,7 @@ export default function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/rooms" element={<RoomListPage />} />
               <Route path="/roomcreate" element={<RoomCreatePage />} />
+              <Route path="/rooms/:roomId" element={<RoomUpdatePage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             <footer className="text-center text-muted my-4">

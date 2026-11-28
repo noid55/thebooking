@@ -12,7 +12,8 @@ interface RoomFormProps {
   submitting?: boolean;
 }
 
-export default function RoomForm({ onRoomChanged, roomId, initialValues, error, submitting }: RoomFormProps) {
+export default function RoomForm({ 
+  onRoomChanged, roomId, initialValues, error, submitting }: RoomFormProps) {
   const [name, setName] = useState<string>(initialValues?.name ?? '');
   const [building, setBuilding] = useState<string>(initialValues?.building ?? '');
   const [capacity, setCapacity] = useState<number>(initialValues?.capacity ?? 1);
@@ -87,9 +88,7 @@ export default function RoomForm({ onRoomChanged, roomId, initialValues, error, 
       <Button variant="primary" type="submit" disabled={submitting}>
         {submitting ? 'Saving...' : roomId ? 'Update Room' : 'Create Room'}
       </Button>
-      <Button variant="secondary" onClick={onCancel} className="ms-2" disabled={submitting}>
-        Cancel
-      </Button>
+      <Button variant="secondary" onClick={onCancel} className="ms-2" disabled={submitting}>Cancel</Button>
     </Form>
   );
 }

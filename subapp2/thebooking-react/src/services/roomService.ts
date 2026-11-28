@@ -10,6 +10,27 @@ export async function getRooms(): Promise<Room[]> {
   return response.json();
 }
 
+export async function fetchRoom(roomId: string): Promise<Room> {
+    const response = await fetch(`${API_URL}/api/roomapi/${roomId}`);
+    if (!response.ok) {
+        throw new Error('Failed to fetch room data');
+    }
+    return response.json();
+}
+
+export async function updateRoom(room: Room): Promise<Room> {
+    const response = await fetch(`${API_URL}/api/roomapi/update/${room.roomId}`, {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json',},
+      body: JSON.stringify(room),
+    });
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response));
+      //throw new Error(`Failed to update room (status ${response.status})`);
+    }
+    return response.json();
+}
+
 export async function createRoom(newRoom: Room): Promise<Room> {
   const response = await fetch(`${API_URL}/api/roomapi/create`, {
     method: 'POST',
