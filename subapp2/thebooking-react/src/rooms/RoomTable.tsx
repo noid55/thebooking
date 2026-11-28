@@ -12,9 +12,10 @@ const roomImages = [
 
 interface RoomTableProps {
   rooms: Room[];
+  onRoomDeleted: (roomId: number) => void;
 }
 
-export default function RoomTable({ rooms }: RoomTableProps) {
+export default function RoomTable({ rooms, onRoomDeleted }: RoomTableProps) {
   const [showDescriptions, setShowDescriptions] = useState<boolean>(true);
   const [showImages, setShowImages] = useState<boolean>(true);
 
@@ -75,6 +76,12 @@ export default function RoomTable({ rooms }: RoomTableProps) {
                     </td>)}
                   <td className="text-center">
                     <Link to={`/rooms/${room.roomId}`}>Update</Link>
+                    <Button 
+                        variant="link"
+                        className="text-danger"
+                        onClick={() => onRoomDeleted(room.roomId!)}>
+                      Delete
+                    </Button>
                   </td>
               </tr>))}
           </tbody>

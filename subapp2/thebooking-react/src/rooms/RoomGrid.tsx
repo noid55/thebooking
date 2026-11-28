@@ -1,4 +1,4 @@
-import { Card, Col, Row } from 'react-bootstrap';
+import { Button, Card, Col, Row } from 'react-bootstrap';
 import { Room } from '../types/room';
 import { Link } from 'react-router-dom';
 
@@ -11,9 +11,10 @@ const roomImages = [
 
 interface RoomGridProps {
   rooms: Room[];
+  onRoomDeleted: (roomId: number) => void;
 }
 
-export default function RoomGrid({ rooms }: RoomGridProps) {
+export default function RoomGrid({ rooms, onRoomDeleted }: RoomGridProps) {
   return (
       <Row>
         {rooms.map((room, index) => (
@@ -41,6 +42,11 @@ export default function RoomGrid({ rooms }: RoomGridProps) {
                   </Card.Text>
                   <div className="mt-auto d-flex justify-content-center gap-2">
                     <Link to={`/rooms/${room.roomId}`} className="btn btn-primary mt-3">Update</Link>
+                    <Button
+                        variant="danger"
+                        onClick={() => onRoomDeleted(room.roomId!)}>
+                      Delete
+                    </Button>
                   </div>
                 </Card.Body>
               </Card>

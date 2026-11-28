@@ -1,14 +1,20 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Alert, Button, Form, Spinner } from 'react-bootstrap';
-import { getRooms } from '../services/roomService';
 import RoomTable from './RoomTable';
 import RoomGrid from './RoomGrid';
 import { Room } from '../types/room';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { deleteRoom, getRooms } from '../services/roomService';
 
 export default function RoomListPage() {
-  const [showTable, setShowTable] = useState<boolean>(true);
+  const [showTable, setShowTable] = useState<boolean>(() => {
+    const savedViewMode = localStorage.getItem('roomViewMode');
+    return savedViewMode !== 'grid';
+  });
+  useEffect(() => {
+    localStorage.setItem('roomViewMode', showTable ? 'table' : 'grid');
+  }, [showTable]);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   const {
@@ -21,6 +27,21 @@ export default function RoomListPage() {
     queryKey: ['rooms'],
     queryFn: getRooms,
   });
+
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteRoom,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rooms'] });
+    },
+  });
+
+  const handleRoomDeleted = (roomId: number) => {
+    if (window.confirm(`Are you sure you want to delete room ${roomId}?`)) {
+      deleteMutation.mutate(roomId);
+    }
+  }
 
   const toggleTableOrGrid = () => {
     setShowTable((prev) => !prev);
@@ -82,12 +103,10 @@ export default function RoomListPage() {
               No rooms found.
             </Alert>
         ) : showTable ? (
-            <RoomTable rooms={filteredRooms} />
+            <RoomTable rooms={filteredRooms} onRoomDeleted={handleRoomDeleted} />
         ) : (
-            <RoomGrid rooms={filteredRooms} />
+            <RoomGrid rooms={filteredRooms} onRoomDeleted={handleRoomDeleted} />
         )}
       </div>
   );
 }
-
-

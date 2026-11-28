@@ -132,6 +132,36 @@ public class RoomAPIController : ControllerBase
         }
     }
 
+   [HttpDelete("delete/{id}")]
+   public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        //Find room in database
+        var room = await _db.Rooms.FindAsync(id);
+        if (room == null)
+        {
+            return NotFound($"Room with ID {id} not found.");
+        }
+
+        //Rooms with booking can't be deleted
+        bool hasBookings = await _db.Bookings.AnyAsync(b => b.RoomId == id);
+        if (hasBookings)
+        {
+            return Conflict("This room has bookoings and can't be deleted.");
+        }
+
+        try
+        {
+            _db.Rooms.Remove(room);
+            await _db.SaveChangesAsync();
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[RoomAPIController] Failed to delete room with ID {RoomId}.", id);
+            return StatusCode(500, "An error occurred while deleting the room.");
+        }
+    }
+   
     private static RoomDto ToDto(Room room) => new RoomDto
     {
         RoomId = room.RoomId,

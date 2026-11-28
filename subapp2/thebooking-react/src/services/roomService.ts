@@ -56,3 +56,12 @@ async function readErrorMessage(response: Response): Promise<string> {
   }
   return `Failed to create room (status ${response.status})`;
 }
+
+export async function deleteRoom(roomId: number): Promise<void> {
+  const response = await fetch(`${API_URL}/api/roomapi/delete/${roomId}`, {
+    method: `DELETE`, 
+  });
+  if (!response.ok) {
+    throw new Error (`Failed to delete room (status ${response.status})`);
+  }
+}
