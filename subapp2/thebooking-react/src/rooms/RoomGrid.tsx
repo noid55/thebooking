@@ -32,7 +32,7 @@ export default function RoomGrid({ rooms }: RoomGridProps) {
                   <Card.Title>{room.name}</Card.Title>
 
                   <Card.Text>
-                    <strong>Building:</strong> {room.building}
+                    <strong>Building:</strong> {room.buildingName}
                     <br />
                     <strong>Capacity:</strong> {room.capacity}
                     <br />

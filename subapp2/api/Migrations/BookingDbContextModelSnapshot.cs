@@ -3,11 +3,11 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using thebooking.Models;
+using thebooking.DAL;
 
 #nullable disable
 
-namespace thebooking.Migrations
+namespace api.Migrations
 {
     [DbContext(typeof(BookingDbContext))]
     partial class BookingDbContextModelSnapshot : ModelSnapshot
@@ -15,11 +15,7 @@ namespace thebooking.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
-                .HasAnnotation("Proxies:ChangeTracking", false)
-                .HasAnnotation("Proxies:CheckEquality", false)
-                .HasAnnotation("Proxies:LazyLoading", true);
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.14");
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -160,11 +156,9 @@ namespace thebooking.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ProviderKey")
-                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ProviderDisplayName")
@@ -202,11 +196,9 @@ namespace thebooking.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Value")
@@ -223,7 +215,7 @@ namespace thebooking.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("BookedBy")
+                    b.Property<string>("Course")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -233,13 +225,27 @@ namespace thebooking.Migrations
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsOpen")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MaxParticipants")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("RoomId")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Topic")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -247,7 +253,101 @@ namespace thebooking.Migrations
 
                     b.HasIndex("RoomId");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("thebooking.Models.Building", b =>
+                {
+                    b.Property<int>("BuildingId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("BuildingId");
+
+                    b.ToTable("Buildings");
+                });
+
+            modelBuilder.Entity("thebooking.Models.Equipment", b =>
+                {
+                    b.Property<int>("EquipmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("EquipmentId");
+
+                    b.ToTable("Equipment");
+                });
+
+            modelBuilder.Entity("thebooking.Models.Message", b =>
+                {
+                    b.Property<int>("MessageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("BookingId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("MessageId");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("thebooking.Models.Participation", b =>
+                {
+                    b.Property<int>("ParticipationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("BookingId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ParticipationId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("BookingId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("Participations");
                 });
 
             modelBuilder.Entity("thebooking.Models.Room", b =>
@@ -256,9 +356,8 @@ namespace thebooking.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Building")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<int>("BuildingId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Capacity")
                         .HasColumnType("INTEGER");
@@ -273,7 +372,32 @@ namespace thebooking.Migrations
 
                     b.HasKey("RoomId");
 
+                    b.HasIndex("BuildingId", "Name")
+                        .IsUnique();
+
                     b.ToTable("Rooms");
+                });
+
+            modelBuilder.Entity("thebooking.Models.RoomEquipment", b =>
+                {
+                    b.Property<int>("RoomEquipmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("EquipmentId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RoomId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("RoomEquipmentId");
+
+                    b.HasIndex("EquipmentId");
+
+                    b.HasIndex("RoomId", "EquipmentId")
+                        .IsUnique();
+
+                    b.ToTable("RoomEquipments");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -335,12 +459,107 @@ namespace thebooking.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Room");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("thebooking.Models.Message", b =>
+                {
+                    b.HasOne("thebooking.Models.Booking", "Booking")
+                        .WithMany("Messages")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("thebooking.Models.Participation", b =>
+                {
+                    b.HasOne("thebooking.Models.Booking", "Booking")
+                        .WithMany("Participations")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("thebooking.Models.Room", b =>
+                {
+                    b.HasOne("thebooking.Models.Building", "Building")
+                        .WithMany("Rooms")
+                        .HasForeignKey("BuildingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Building");
+                });
+
+            modelBuilder.Entity("thebooking.Models.RoomEquipment", b =>
+                {
+                    b.HasOne("thebooking.Models.Equipment", "Equipment")
+                        .WithMany("RoomEquipments")
+                        .HasForeignKey("EquipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("thebooking.Models.Room", "Room")
+                        .WithMany("RoomEquipments")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Equipment");
+
+                    b.Navigation("Room");
+                });
+
+            modelBuilder.Entity("thebooking.Models.Booking", b =>
+                {
+                    b.Navigation("Messages");
+
+                    b.Navigation("Participations");
+                });
+
+            modelBuilder.Entity("thebooking.Models.Building", b =>
+                {
+                    b.Navigation("Rooms");
+                });
+
+            modelBuilder.Entity("thebooking.Models.Equipment", b =>
+                {
+                    b.Navigation("RoomEquipments");
                 });
 
             modelBuilder.Entity("thebooking.Models.Room", b =>
                 {
                     b.Navigation("Bookings");
+
+                    b.Navigation("RoomEquipments");
                 });
 #pragma warning restore 612, 618
         }

@@ -53,7 +53,17 @@ Da er loggene fra API og frontend lettere å skille når man feilsøker.
 - Ingen lazy loading i `BookingDbContext`. Repositoriene henter relaterte data med `.Include()` (eager loading), f.eks. `RoomRepository.GetAll()`.
 - `DBInit` seeder ikke bookinger ennå (se over).
 
-Nye migrasjoner lages med `dotnet ef migrations add <Navn>` i `subapp2/api` (krever `dotnet tool install --global dotnet-ef`).
+Nye migrasjoner lages med `dotnons add <Navnet ef migrati>` i `subapp2/api` (krever `dotnet tool install --global dotnet-ef`).
+- **API → database:** Ved oppstart kjører `Program.cs` `db.Database.Migrate()` mot `api/Booking.db`. Deretter legger `DAL/DBInit.cs` inn testdata hvis tabellene er tomme: 5 bygg (P32–P52), 4 typer utstyr og 7 grupperom med utstyr. Man trenger altså ikke kjøre `dotnet ef database update` manuelt.
+- **Datalaget (DAL):** Controllerne bruker repositories (`DAL/I*Repository.cs`) i stedet for `BookingDbContext` direkte. De registreres i `Program.cs`. Domenereglene for booking ligger i `Services/BookingService.cs`.
+
+### Etter at du har hentet nye endringer: slett gammel database
+Migrasjonene ble samlet til én ny `InitialCreate` da datalaget ble lagt inn. Har du en `Booking.db` fra før, må den slettes før API-et startes, ellers krasjer det med `table "..." already exists`:
+```
+cd subapp2/api
+rm Booking.db*
+```
+(I PowerShell: `Remove-Item Booking.db*`.) En ny database med testdata lages ved neste oppstart.
 
 ## Teste API-et uten frontend
 Når API-et kjører: `http://localhost:5234/scalar/v1` (Scalar). Her kan man prøve endepunktene direkte – nyttig for å finne ut om en feil ligger i frontend eller backend.
