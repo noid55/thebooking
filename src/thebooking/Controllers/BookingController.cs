@@ -15,17 +15,19 @@ public class BookingController : Controller
 {
     private readonly IBookingRepository _bookingRepository;
     private readonly IRoomRepository _roomRepository;
+    private readonly IBuildingRepository _buildingRepository; // Used for the building list in the search form
     private readonly IParticipationRepository _participationRepository;
     private readonly IBookingService _bookingService;
     private readonly UserManager<IdentityUser> _userManager; // Used to find the logged-in user
     private readonly ILogger<BookingController> _logger;
 
     public BookingController(IBookingRepository bookingRepository, IRoomRepository roomRepository,
-        IParticipationRepository participationRepository, IBookingService bookingService,
-        UserManager<IdentityUser> userManager, ILogger<BookingController> logger)
+        IBuildingRepository buildingRepository, IParticipationRepository participationRepository,
+        IBookingService bookingService, UserManager<IdentityUser> userManager, ILogger<BookingController> logger)
     {
         _bookingRepository = bookingRepository;
         _roomRepository = roomRepository;
+        _buildingRepository = buildingRepository;
         _participationRepository = participationRepository;
         _bookingService = bookingService;
         _userManager = userManager;
@@ -60,14 +62,15 @@ public class BookingController : Controller
         };
     }
 
-    // All bookings (for admin)
+    // All bookings: only for admin (students use My bookings and Find study groups)
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Table()
     {
         _logger.LogInformation("The booking table was accessed.");
 
         var bookings = await _bookingRepository.GetAll();
-        ViewBag.CurrentViewName = "All Bookings";
-        return View(bookings);
+        var bookingsViewModel = new BookingsViewModel(bookings, "All Bookings");
+        return View(bookingsViewModel);
     }
 
     // The bookings of the logged-in user (My bookings). Uses the same view as Table.
@@ -77,8 +80,34 @@ public class BookingController : Controller
         _logger.LogInformation("User {UserId} opened their bookings.", userId);
 
         var bookings = await _bookingRepository.GetBookingsForUser(userId);
-        ViewBag.CurrentViewName = "My Bookings";
-        return View("Table", bookings);
+        var bookingsViewModel = new BookingsViewModel(bookings, "My Bookings");
+        return View("Table", bookingsViewModel);
+    }
+
+
+    // Find study groups: open sessions that have not started, searchable by course, building and date
+    public async Task<IActionResult> Open(string? course, int? buildingId, DateTime? date)
+    {
+        _logger.LogInformation("Study group search: course {Course}, building {BuildingId}, date {Date}.", course, buildingId, date);
+
+        var sessions = await _bookingRepository.SearchOpenSessions(course, buildingId, date);
+        var buildings = await _buildingRepository.GetAll();
+
+        var viewModel = new OpenSessionsViewModel
+        {
+            Sessions = sessions,
+            Course = course,
+            BuildingId = buildingId,
+            Date = date,
+            BuildingSelectList = buildings.Select(b => new SelectListItem
+            {
+                Value = b.BuildingId.ToString(),
+                Text = b.Name,
+                Selected = b.BuildingId == buildingId
+            }).ToList()
+        };
+
+        return View(viewModel);
     }
 
     // Shows the booking, the participants and the messages.
@@ -93,6 +122,15 @@ public class BookingController : Controller
         }
 
         var userId = GetCurrentUserId();
+        var isParticipant = await _participationRepository.IsParticipant(id, userId);
+
+        // Private sessions can only be seen by the owner, an admin and students who have already joined
+        if (!booking.IsOpen && !CanManageBooking(booking) && !isParticipant)
+        {
+            _logger.LogWarning("User {UserId} tried to open private booking {BookingId} without permission.", userId, id);
+            return Forbid();
+        }
+
         var joinErrors = await _bookingService.ValidateJoin(booking, userId);
         var canPostMessage = await _bookingService.CanPostMessage(booking, userId);
 
@@ -102,7 +140,7 @@ public class BookingController : Controller
             CurrentUserId = userId,
             IsAdmin = User.IsInRole("Admin"),
             CanManage = CanManageBooking(booking),
-            IsParticipant = await _participationRepository.IsParticipant(id, userId),
+            IsParticipant = isParticipant,
             CanJoin = joinErrors.Count == 0,
             JoinErrors = joinErrors,
             CanPostMessage = canPostMessage,
@@ -113,7 +151,6 @@ public class BookingController : Controller
 
         return View(viewModel);
     }
-
     // roomId is optional: it comes from the "Book this room" button on Room Details
     [HttpGet]
     public async Task<IActionResult> Create(int? roomId)
@@ -132,6 +169,10 @@ public class BookingController : Controller
     public async Task<IActionResult> Create(Booking booking)
     {
         booking.UserId = GetCurrentUserId();
+
+        // Courses are stored in upper case, so "data1500" and "DATA1500" are the same in the search
+        // Course is null when the field is left empty, so ?. avoids a crash before ModelState is checked
+        booking.Course = booking.Course?.Trim().ToUpper() ?? string.Empty;
 
         // The domain rules are only checked when the fields themselves are valid
         if (ModelState.IsValid)
@@ -218,6 +259,10 @@ public class BookingController : Controller
         // The owner of the booking does not change when it is edited
         booking.UserId = existing.UserId;
 
+        // Courses are stored in upper case, so "data1500" and "DATA1500" are the same in the search
+        // Course is null when the field is left empty, so ?. avoids a crash before ModelState is checked
+        booking.Course = booking.Course?.Trim().ToUpper() ?? string.Empty;
+
         if (ModelState.IsValid)
         {
             var errors = await _bookingService.ValidateBooking(booking);
@@ -253,7 +298,6 @@ public class BookingController : Controller
 
         return View(await CreateBookingFormViewModel(booking));
     }
-
     // The logged-in student joins an open study session
     [HttpPost]
     public async Task<IActionResult> Join(int id)

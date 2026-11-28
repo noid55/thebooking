@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using thebooking.DAL;
 using thebooking.Models;
+using thebooking.ViewModels;
 
 namespace thebooking.Controllers;
-
+// Equipment is only managed by admins, so the whole controller is locked to the Admin role
+[Authorize(Roles = "Admin")]
 public class EquipmentController : Controller
 {
     private readonly IEquipmentRepository _equipmentRepository;
@@ -20,8 +23,8 @@ public class EquipmentController : Controller
         _logger.LogInformation("The equipment table was accessed.");
 
         var equipment = await _equipmentRepository.GetAll();
-        ViewBag.CurrentViewName = "List of Equipment";
-        return View(equipment);
+        var equipmentListViewModel = new EquipmentListViewModel(equipment, "List of Equipment");
+        return View(equipmentListViewModel);
     }
 
     public async Task<IActionResult> Details(int id)
@@ -50,6 +53,7 @@ public class EquipmentController : Controller
             try
             {
                 await _equipmentRepository.Create(equipment);
+                _logger.LogInformation("Equipment {EquipmentId} was created.", equipment.EquipmentId);
                 return RedirectToAction(nameof(Table));
             }
             catch (Exception e)
@@ -89,6 +93,7 @@ public class EquipmentController : Controller
             try
             {
                 await _equipmentRepository.Update(equipment);
+                _logger.LogInformation("Equipment {EquipmentId} was updated.", equipment.EquipmentId);
                 return RedirectToAction(nameof(Table));
             }
             catch (Exception e)
@@ -100,6 +105,7 @@ public class EquipmentController : Controller
 
         return View(equipment);
     }
+
 
     [HttpGet]
     public async Task<IActionResult> Delete(int id)
@@ -114,13 +120,14 @@ public class EquipmentController : Controller
         return View(equipment);
     }
 
+
     [HttpPost]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var equipment = await _equipmentRepository.GetEquipmentById(id);
         if (equipment == null)
         {
-             _logger.LogWarning("Equipment {EquipmentId} was not found.", id);
+            _logger.LogWarning("Equipment {EquipmentId} was not found.", id);
             return NotFound();
         }
 
@@ -128,6 +135,7 @@ public class EquipmentController : Controller
         {
             // Koblingene i RoomEquipment slettes automatisk (Cascade). Rommene blir stående.
             await _equipmentRepository.Delete(id);
+            _logger.LogInformation("Equipment {EquipmentId} was deleted.", id);
         }
         catch (Exception e)
         {

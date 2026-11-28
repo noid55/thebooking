@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using thebooking.DAL;
 using thebooking.Models;
+using thebooking.ViewModels;
 
 namespace thebooking.Controllers;
-
+// Buildings are only managed by admins, so the whole controller is locked to the Admin role
+[Authorize(Roles = "Admin")]
 public class BuildingController : Controller
 {
     private readonly IBuildingRepository _buildingRepository;
@@ -20,8 +23,8 @@ public class BuildingController : Controller
         _logger.LogInformation("The building table was accessed.");
 
         var buildings = await _buildingRepository.GetAll();
-        ViewBag.CurrentViewName = "List of Buildings";
-        return View(buildings);
+        var buildingsViewModel = new BuildingsViewModel(buildings, "List of Buildings");
+        return View(buildingsViewModel);
     }
 
     public async Task<IActionResult> Details(int id)
@@ -35,13 +38,11 @@ public class BuildingController : Controller
 
         return View(building);
     }
-
     [HttpGet]
     public IActionResult Create()
     {
         return View();
     }
-
     [HttpPost]
     public async Task<IActionResult> Create(Building building)
     {
@@ -50,6 +51,7 @@ public class BuildingController : Controller
             try
             {
                 await _buildingRepository.Create(building);
+                _logger.LogInformation("Building {BuildingId} was created.", building.BuildingId);
                 return RedirectToAction(nameof(Table));
             }
             catch (Exception e)
@@ -61,7 +63,6 @@ public class BuildingController : Controller
 
         return View(building);
     }
-
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
@@ -89,6 +90,7 @@ public class BuildingController : Controller
             try
             {
                 await _buildingRepository.Update(building);
+                _logger.LogInformation("Building {BuildingId} was updated.", building.BuildingId);
                 return RedirectToAction(nameof(Table));
             }
             catch (Exception e)
@@ -127,6 +129,7 @@ public class BuildingController : Controller
         try
         {
             await _buildingRepository.Delete(id);
+            _logger.LogInformation("Building {BuildingId} was deleted.", id);
         }
         catch (Exception e)
         {

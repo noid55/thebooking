@@ -93,4 +93,34 @@ public class BookingRepository : IBookingRepository
             start < b.EndTime &&
             (excludeBookingId == null || b.BookingId != excludeBookingId)); //booking som redigeres sammelignes ikke med seg selv
     }
+
+    
+    // Open study sessions that have not started yet, filtered by course, building and date.
+    // Empty search fields are ignored. Courses are stored in upper case, so the search is too.
+    public async Task<IEnumerable<Booking>> SearchOpenSessions(string? course, int? buildingId, DateTime? date)
+    {
+        var now = DateTime.Now;
+        IQueryable<Booking> query = _db.Bookings.Where(b =>
+            b.IsOpen &&
+            b.Status == BookingStatus.Confirmed &&
+            b.StartTime > now);
+
+        if (!string.IsNullOrWhiteSpace(course))
+        {
+            var courseUpper = course.Trim().ToUpper();
+            query = query.Where(b => b.Course.Contains(courseUpper));
+        }
+        if (buildingId.HasValue)
+        {
+            query = query.Where(b => b.Room!.BuildingId == buildingId.Value);
+        }
+        if (date.HasValue)
+        {
+            var dayStart = date.Value.Date;
+            var dayEnd = dayStart.AddDays(1);
+            query = query.Where(b => b.StartTime >= dayStart && b.StartTime < dayEnd);
+        }
+
+        return await query.OrderBy(b => b.StartTime).ToListAsync();
+    }
 }

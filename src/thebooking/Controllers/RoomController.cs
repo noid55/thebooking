@@ -45,13 +45,38 @@ public class RoomController : Controller
         };
     }
 
-    public async Task<IActionResult> Table()
+    // Multi-parameter search: building, minimum capacity and equipment.
+    // Empty search fields are ignored, so without any search all rooms are shown.
+    public async Task<IActionResult> Table(int? buildingId, int? minCapacity, List<int> equipmentIds)
     {
-        _logger.LogInformation("The study room table was accessed.");
+        _logger.LogInformation("Room search: building {BuildingId}, min capacity {MinCapacity}, equipment {EquipmentIds}.",
+            buildingId, minCapacity, string.Join(",", equipmentIds));
 
-        var rooms = await _roomRepository.GetAll();
-        ViewBag.CurrentViewName = "List of Rooms";
-        return View(rooms);
+        var rooms = await _roomRepository.Search(buildingId, minCapacity, equipmentIds);
+        var buildings = await _buildingRepository.GetAll();
+        var equipment = await _equipmentRepository.GetAll();
+
+        var viewModel = new RoomSearchViewModel
+        {
+            Rooms = rooms,
+            BuildingId = buildingId,
+            MinCapacity = minCapacity,
+            EquipmentIds = equipmentIds,
+            BuildingSelectList = buildings.Select(b => new SelectListItem
+            {
+                Value = b.BuildingId.ToString(),
+                Text = b.Name,
+                Selected = b.BuildingId == buildingId
+            }).ToList(),
+            EquipmentSelectList = equipment.Select(e => new SelectListItem
+            {
+                Value = e.EquipmentId.ToString(),
+                Text = e.Name,
+                Selected = equipmentIds.Contains(e.EquipmentId)
+            }).ToList()
+        };
+
+        return View(viewModel);
     }
 
     public async Task<IActionResult> Details(int id)
@@ -67,14 +92,14 @@ public class RoomController : Controller
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create()
     {
         return View(await CreateRoomFormViewModel(new Room(), new List<int>()));
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create(Room room, List<int> selectedEquipmentIds)
     {
         if (ModelState.IsValid && await _roomRepository.NameExistsInBuilding(room.Name, room.BuildingId))
@@ -87,7 +112,8 @@ public class RoomController : Controller
             try
             {
                 await _roomRepository.Create(room);
-                 await _roomRepository.UpdateEquipment(room.RoomId, selectedEquipmentIds); //slik at utstyret lagres
+                await _roomRepository.UpdateEquipment(room.RoomId, selectedEquipmentIds); //slik at utstyret lagres
+                _logger.LogInformation("Room {RoomId} was created.", room.RoomId);
                 return RedirectToAction(nameof(Table));
             }
             catch (Exception e)
@@ -98,10 +124,10 @@ public class RoomController : Controller
         }
 
         return View(await CreateRoomFormViewModel(room, selectedEquipmentIds));
-    }    
+    }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Edit(int id)
     {
         var room = await _roomRepository.GetRoomById(id);
@@ -117,7 +143,7 @@ public class RoomController : Controller
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Edit(int id, Room room, List<int> selectedEquipmentIds)
     {
         if (id != room.RoomId)
@@ -137,6 +163,7 @@ public class RoomController : Controller
             {
                 await _roomRepository.Update(room);
                 await _roomRepository.UpdateEquipment(room.RoomId, selectedEquipmentIds);
+                _logger.LogInformation("Room {RoomId} was updated.", room.RoomId);
                 return RedirectToAction(nameof(Table));
             }
             catch (Exception e)
@@ -150,7 +177,7 @@ public class RoomController : Controller
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         var room = await _roomRepository.GetRoomById(id);
@@ -164,7 +191,7 @@ public class RoomController : Controller
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var room = await _roomRepository.GetRoomById(id);
@@ -177,6 +204,7 @@ public class RoomController : Controller
         try
         {
             await _roomRepository.Delete(id);
+            _logger.LogInformation("Room {RoomId} was deleted.", id);
         }
         catch (Exception e)
         {
