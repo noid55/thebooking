@@ -36,21 +36,43 @@
         </dd>
     </dl>
 
-    @* Conditional rendering (if/else): shows all bookings for this room (confirmed and cancelled),
-   or "No bookings." With lazy loading an empty list is not null, so .Any() is also used here. *@
-    <h3>Bookings </h3>
-    @if (Model.Bookings != null && Model.Bookings.Any())
+        @* Upcoming bookings: only confirmed bookings that have not ended, sorted by time.
+       Cancelled and past bookings are hidden. The topic is only shown for open sessions,
+       so private sessions stay private, but students can still see when the room is taken. *@
+    @{
+        var upcomingBookings = (Model.Bookings ?? new List<Booking>())
+            .Where(b => b.Status == BookingStatus.Confirmed && b.EndTime > DateTime.Now)
+            .OrderBy(b => b.StartTime)
+            .ToList();
+    }
+
+    <h3>Upcoming bookings</h3>
+    @if (upcomingBookings.Any())
     {
-        <ul>
-            @foreach (var booking in Model.Bookings)
+        <ul class="list-group mb-3">
+            @foreach (var booking in upcomingBookings)
             {
-                <li> @booking.Topic: @booking.StartTime - @booking.EndTime (@booking.Status) </li>
+                <li class="list-group-item">
+                    <strong>@booking.StartTime.ToString("dd.MM.yyyy HH:mm") - @booking.EndTime.ToString("HH:mm")</strong>
+                    @* Conditional rendering (if/else): open sessions show course and topic, private sessions do not *@
+                    @if (booking.IsOpen)
+                    {
+                        <span>· @booking.Course:</span>
+                        <a asp-controller="Booking" asp-action="Details" asp-route-id="@booking.BookingId">@booking.Topic</a>
+                        <span class="badge bg-success">Open</span>
+                    }
+                    else
+                    {
+                        <span>· Private session</span>
+                        <span class="badge bg-dark">Private</span>
+                    }
+                </li>
             }
         </ul>
     }
     else
     {
-        <p> No bookings. </p>
+        <p>No upcoming bookings. The room is free.</p>
     }
     <a asp-action="Table" class="btn btn-secondary">Back to Table View</a>
     <a asp-controller="Booking" asp-action="Create" asp-route-roomId="@Model.RoomId" 

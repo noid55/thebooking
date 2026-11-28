@@ -1,5 +1,6 @@
-@model IEnumerable<thebooking.Models.Equipment>
-<h1>@ViewBag.CurrentViewName</h1>
+@model thebooking.ViewModels.EquipmentListViewModel
+@* Only admins can open this page (see [Authorize(Roles = "Admin")] on EquipmentController) *@
+<h1>@Model.CurrentViewName</h1>
 <a asp-action="Create" class="btn btn-primary">Create new equipment</a>
 <table class="table table-striped">
     <tr>
@@ -8,7 +9,7 @@
         <th>Rooms</th>
         <th></th>
     </tr>
-    @foreach (var equipment in Model)
+    @foreach (var equipment in Model.EquipmentList)
     {
         <tr>
             <td>@equipment.EquipmentId</td>

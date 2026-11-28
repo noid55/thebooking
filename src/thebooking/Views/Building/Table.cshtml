@@ -1,5 +1,6 @@
-@model IEnumerable<thebooking.Models.Building>
-<h1>@ViewBag.CurrentViewName</h1>
+@model thebooking.ViewModels.BuildingsViewModel
+@* Only admins can open this page (see [Authorize(Roles = "Admin")] on BuildingController) *@
+<h1>@Model.CurrentViewName</h1>
 <a asp-action="Create" class="btn btn-primary">Create new building</a>
 <table class="table table-striped">
     <tr>
@@ -9,13 +10,13 @@
         <th>Rooms</th>
         <th></th>
     </tr>
-    @foreach (var building in Model)
+   @foreach (var building in Model.Buildings)
     {
         <tr>
             <td>@building.BuildingId</td>
             <td><a asp-action="Details" asp-route-id="@building.BuildingId">@building.Name</a></td>
             <td>@building.Address</td>
-            <td>@(building.Rooms?.Count ?? 0)</td> @*antall rom i bygget*@
+            <td>@(building.Rooms?.Count ?? 0)</td> @* number of rooms in the building *@
             <td>
                 <a asp-action="Edit" asp-route-id="@building.BuildingId" class="btn btn-primary btn-sm">Edit</a>
                 <a asp-action="Delete" asp-route-id="@building.BuildingId" class="btn btn-danger btn-sm">Delete</a>

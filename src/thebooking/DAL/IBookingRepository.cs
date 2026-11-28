@@ -21,4 +21,5 @@ public interface IBookingRepository
     // Lists
     Task<IEnumerable<Booking>> GetBookingsForRoom(int roomId, DateTime date); //confirmed bookings for one room on one day (kalender)
     Task<IEnumerable<Booking>> GetBookingsForUser(string userId); // all bookings for one user (My bookings)
+    Task<IEnumerable<Booking>> SearchOpenSessions(string? course, int? buildingId, DateTime? date); // open study groups (Find study groups)
 }
