@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import { Room } from '../types/room';
+import { Link } from 'react-router-dom';
 
 const roomImages = [
   '/images/room1.jpg',
@@ -31,16 +32,14 @@ export default function RoomTable({ rooms }: RoomTableProps) {
           <Button
               variant="outline-secondary"
               size="sm"
-              onClick={toggleDescriptions}
-          >
+              onClick={toggleDescriptions}>
             {showDescriptions ? 'Hide Descriptions' : 'Show Descriptions'}
           </Button>
 
           <Button
               variant="outline-secondary"
               size="sm"
-              onClick={toggleImages}
-          >
+              onClick={toggleImages}>
             {showImages ? 'Hide Images' : 'Show Images'}
           </Button>
         </div>
@@ -53,6 +52,7 @@ export default function RoomTable({ rooms }: RoomTableProps) {
             <th>Capacity</th>
             {showDescriptions && <th>Description</th>}
             {showImages && <th>Image</th>}
+            <th>Actions</th>
           </tr>
           </thead>
 
@@ -62,26 +62,21 @@ export default function RoomTable({ rooms }: RoomTableProps) {
                 <td>{room.name}</td>
                 <td>{room.building}</td>
                 <td>{room.capacity}</td>
-
-                {showDescriptions && (
-                    <td>{room.description}</td>
-                )}
-
+                {showDescriptions && (<td>{room.description}</td>)}
                 {showImages && (
-                    <td>
-                      <img
+                    <td><img 
                           src={roomImages[index % roomImages.length]}
                           alt={`Room ${room.name}`}
                           style={{
                             width: '120px',
                             height: '80px',
                             objectFit: 'cover',
-                          }}
-                      />
-                    </td>
-                )}
-              </tr>
-          ))}
+                          }}/>
+                    </td>)}
+                  <td className="text-center">
+                    <Link to={`/rooms/${room.roomId}`}>Update</Link>
+                  </td>
+              </tr>))}
           </tbody>
         </Table>
       </div>

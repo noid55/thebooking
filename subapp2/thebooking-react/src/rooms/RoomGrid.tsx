@@ -1,5 +1,6 @@
 import { Card, Col, Row } from 'react-bootstrap';
 import { Room } from '../types/room';
+import { Link } from 'react-router-dom';
 
 const roomImages = [
   '/images/room1.jpg',
@@ -28,7 +29,7 @@ export default function RoomGrid({ rooms }: RoomGridProps) {
                     }}
                 />
 
-                <Card.Body>
+                <Card.Body className="d-flex flex-column">
                   <Card.Title>{room.name}</Card.Title>
 
                   <Card.Text>
@@ -38,6 +39,9 @@ export default function RoomGrid({ rooms }: RoomGridProps) {
                     <br />
                     <strong>Description:</strong> {room.description}
                   </Card.Text>
+                  <div className="mt-auto d-flex justify-content-center gap-2">
+                    <Link to={`/rooms/${room.roomId}`} className="btn btn-primary mt-3">Update</Link>
+                  </div>
                 </Card.Body>
               </Card>
             </Col>

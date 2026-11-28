@@ -27,3 +27,4 @@ src/api/obj/
 src/api/*.db
 src/api/*.db-shm
 src/api/*.db-wal
+node_modules
