@@ -42,7 +42,16 @@ Da er loggene fra API og frontend lettere å skille når man feilsøker.
 ## Hvordan delene henger sammen
 - **React → API:** `.env.development` setter `VITE_API_URL=http://localhost:5234`. `src/services/roomService.ts` bruker denne til å bygge URL-ene (f.eks. `/api/roomapi/roomlist`).
 - **CORS:** Frontend (port 4000) og API (port 5234) er ulike *origins*. `Program.cs` i `api/` har en CORS-policy som tillater `localhost`, ellers ville nettleseren blokkert kallene.
-- **API → database:** Ved oppstart kjører `Program.cs` `db.Database.Migrate()` mot `api/Booking.db` og legger inn to testrom hvis tabellen er tom. Man trenger altså ikke kjøre `dotnet ef database update` manuelt.
+- **API → database:** Ved oppstart kjører `Program.cs` `db.Database.Migrate()` mot `api/Booking.db`. Deretter legger `DAL/DBInit.cs` inn testdata hvis tabellene er tomme: 5 bygg (P32–P52), 4 typer utstyr og 7 grupperom med utstyr. Man trenger altså ikke kjøre `dotnet ef database update` manuelt.
+- **Datalaget (DAL):** Controllerne bruker repositories (`DAL/I*Repository.cs`) i stedet for `BookingDbContext` direkte. De registreres i `Program.cs`. Domenereglene for booking ligger i `Services/BookingService.cs`.
+
+### Etter at du har hentet nye endringer: slett gammel database
+Migrasjonene ble samlet til én ny `InitialCreate` da datalaget ble lagt inn. Har du en `Booking.db` fra før, må den slettes før API-et startes, ellers krasjer det med `table "..." already exists`:
+```
+cd subapp2/api
+rm Booking.db*
+```
+(I PowerShell: `Remove-Item Booking.db*`.) En ny database med testdata lages ved neste oppstart.
 
 ## Teste API-et uten frontend
 Når API-et kjører: `http://localhost:5234/scalar/v1` (Scalar). Her kan man prøve endepunktene direkte – nyttig for å finne ut om en feil ligger i frontend eller backend.
@@ -51,6 +60,6 @@ Når API-et kjører: `http://localhost:5234/scalar/v1` (Scalar). Her kan man pr�
 - **`'concurrently' is not recognized`** → `npm install` er ikke kjørt.
 - **`address already in use` på 5234** → API-et kjører allerede (f.eks. fra Rider). Stopp det først.
 - **Rommene lastes ikke** → Åpne DevTools (F12) → *Network*. Sjekk hvilken URL kallet gikk til og hvilken statuskode det fikk.
-- **`table "Rooms" already exists`** → gammel `Booking.db`. Slett `api/Booking.db*`, så lages en ny ved neste oppstart.
+- **`table "..." already exists`** → gammel `Booking.db`. Slett `api/Booking.db*`, så lages en ny ved neste oppstart.
 
 Se `DemoDokumentasjon/React/Demo-React-2-APIBackendAndDebugging.pdf` for mer om oppsettet med API-backend og debugging.

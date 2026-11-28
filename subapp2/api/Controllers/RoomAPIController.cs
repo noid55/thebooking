@@ -61,7 +61,8 @@ public class RoomAPIController : ControllerBase
         }
 
         // Bygget må finnes, ellers feiler fremmednøkkelen i databasen
-        if (await _buildingRepository.GetBuildingById(room.BuildingId) == null)
+        var building = await _buildingRepository.GetBuildingById(room.BuildingId);
+        if (building == null)
         {
             ModelState.AddModelError(nameof(RoomDto.BuildingId), "The selected building does not exist.");
             return ValidationProblem(ModelState);
@@ -84,6 +85,7 @@ public class RoomAPIController : ControllerBase
                 Name = room.Name,
                 Capacity = room.Capacity,
                 BuildingId = room.BuildingId,
+                BuildingName = building.Name,
                 Description = room.Description
             };
 
