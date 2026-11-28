@@ -15,20 +15,12 @@
       ]
     },
     {
-      "library": "jquery-validate@1.21.0",
-      "destination": "wwwroot/lib/jquery-validation/dist/",
-      "files": [
-        "jquery.validate.min.js",
-        "jquery.validate.js"
-      ]
+      "library": "jquery-validate@1.22.1",
+      "destination": "wwwroot/lib/jquery-validation/"
     },
     {
       "library": "jquery-validation-unobtrusive@4.0.0",
-      "destination": "wwwroot/lib/jquery-validation-unobtrusive/",
-      "files": [
-        "jquery.validate.unobtrusive.min.js",
-        "jquery.validate.unobtrusive.js"
-      ]
+      "destination": "wwwroot/lib/jquery-validation-unobtrusive/"
     }
   ]
 }
