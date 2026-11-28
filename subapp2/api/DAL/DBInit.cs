@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Identity;
 using thebooking.Models;
 
 namespace thebooking.DAL;
 
 public static class DBInit
 {
+    // Used as the "logged-in" user until JWT is in place (#6)
+    public const string TestUserId = "api-test-user";
     public static void Seed(IApplicationBuilder app)
     {
         using var serviceScope = app.ApplicationServices.CreateScope();
@@ -68,6 +71,22 @@ public static class DBInit
                 new RoomEquipment { RoomId = 7, EquipmentId = 4 }, // 501: Video conference
             };
             context.AddRange(roomEquipments);
+            context.SaveChanges();
+        }
+        
+        
+        // Temporary test user. Booking.UserId is a foreign key to AspNetUsers, so a
+        // booking needs a real user row. Remove when JWT + UserManager seeding (#6) is in.
+        if (!context.Users.Any(u => u.Id == TestUserId))
+        {
+            context.Users.Add(new IdentityUser
+            {
+                Id = TestUserId,
+                UserName = "apitest@oslomet.no",
+                NormalizedUserName = "APITEST@OSLOMET.NO",
+                Email = "apitest@oslomet.no",
+                NormalizedEmail = "APITEST@OSLOMET.NO"
+            });
             context.SaveChanges();
         }
 
