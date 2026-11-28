@@ -14,7 +14,7 @@ public class BookingRepository : IBookingRepository
 
     public async Task<IEnumerable<Booking>> GetAll()
     {
-        return await _db.Bookings.ToListAsync();
+        return await _db.Bookings.Include(b => b.Room).ToListAsync();
     }
 
     public async Task<Booking?> GetBookingById(int id)
@@ -78,6 +78,7 @@ public class BookingRepository : IBookingRepository
     public async Task<IEnumerable<Booking>> GetBookingsForUser(string userId)
     {
         return await _db.Bookings
+            .Include(b => b.Room)
             .Where(b => b.UserId == userId)
             .OrderBy(b => b.StartTime)
             .ToListAsync();

@@ -11,6 +11,9 @@ import BuildingUpdatePage from './buildings/BuildingUpdatePage'
 import EquipmentListPage from './equipment/EquipmentListPage'
 import EquipmentCreatePage from './equipment/EquipmentCreatePage'
 import EquipmentUpdatePage from './equipment/EquipmentUpdatePage'
+import MyBookingsPage from './bookings/MyBookingsPage'
+import BookingCreatePage from './bookings/BookingCreatePage'
+import BookingUpdatePage from './bookings/BookingUpdatePage'
 import NavMenu from './shared/NavMenu'
 import './App.css'
 
@@ -33,6 +36,9 @@ export default function App() {
                         <Route path="/equipment" element={<EquipmentListPage/>}/>
                         <Route path="/equipmentcreate" element={<EquipmentCreatePage/>}/>
                         <Route path="/equipmentupdate/:equipmentId" element={<EquipmentUpdatePage/>}/>
+                        <Route path="/mybookings" element={<MyBookingsPage/>}/>
+                        <Route path="/bookingcreate" element={<BookingCreatePage/>}/>
+                        <Route path="/bookingupdate/:bookingId" element={<BookingUpdatePage/>}/>
                         <Route path="*" element={<Navigate to="/" replace/>}/>
                     </Routes>
                     <footer className="text-center text-muted my-4">

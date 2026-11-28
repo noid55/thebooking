@@ -12,6 +12,7 @@ export default function NavMenu() {
                     <Nav.Link as={NavLink} to="/rooms">Rooms</Nav.Link>
                     <Nav.Link as={NavLink} to="/buildings">Buildings</Nav.Link>
                     <Nav.Link as={NavLink} to="/equipment">Equipment</Nav.Link>
+                    <Nav.Link as={NavLink} to="/mybookings">My bookings</Nav.Link>
                 </Nav>
             </Navbar.Collapse>
         </Navbar>
