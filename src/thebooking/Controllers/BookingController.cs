@@ -171,7 +171,8 @@ public class BookingController : Controller
         booking.UserId = GetCurrentUserId();
 
         // Courses are stored in upper case, so "data1500" and "DATA1500" are the same in the search
-        booking.Course = booking.Course.Trim().ToUpper();
+        // Course is null when the field is left empty, so ?. avoids a crash before ModelState is checked
+        booking.Course = booking.Course?.Trim().ToUpper() ?? string.Empty;
 
         // The domain rules are only checked when the fields themselves are valid
         if (ModelState.IsValid)
@@ -259,7 +260,8 @@ public class BookingController : Controller
         booking.UserId = existing.UserId;
 
         // Courses are stored in upper case, so "data1500" and "DATA1500" are the same in the search
-        booking.Course = booking.Course.Trim().ToUpper();
+        // Course is null when the field is left empty, so ?. avoids a crash before ModelState is checked
+        booking.Course = booking.Course?.Trim().ToUpper() ?? string.Empty;
 
         if (ModelState.IsValid)
         {
