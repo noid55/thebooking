@@ -10,6 +10,8 @@ export default function NavMenu() {
                 <Nav className="me-auto">
                     <Nav.Link as={NavLink} to="/" end>Home</Nav.Link>
                     <Nav.Link as={NavLink} to="/rooms">Rooms</Nav.Link>
+                    <Nav.Link as={NavLink} to="/buildings">Buildings</Nav.Link>
+                    <Nav.Link as={NavLink} to="/equipment">Equipment</Nav.Link>
                 </Nav>
             </Navbar.Collapse>
         </Navbar>

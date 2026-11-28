@@ -96,5 +96,7 @@ public class RoomAPIController : ControllerBase
             _logger.LogError(ex, "Failed to create room.");
             return StatusCode(500, "An error occurred while creating the room.");
         }
+        
+        
     }
 }
