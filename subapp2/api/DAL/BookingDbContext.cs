@@ -18,30 +18,30 @@ public class BookingDbContext : IdentityDbContext
     public DbSet<Participation> Participations { get; set; }
     public DbSet<Message> Messages { get; set; }
 
-
-   
+    
  protected override void OnModelCreating(ModelBuilder modelBuilder)
     { 
         base.OnModelCreating(modelBuilder);
-        //et rom som har bookinger kan ikke slettes
+        // A room that has bookings cannot be deleted
         modelBuilder.Entity<Booking>()
             .HasOne(b => b.Room)
             .WithMany(r => r.Bookings)
             .HasForeignKey(b => b.RoomId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        //et bygg som har rom kan ikke slettes
+            
+        // A building that has rooms cannot be deleted
         modelBuilder.Entity<Room>()
-            .HasOne(r => r.Building)
-            .WithMany(b => b.Rooms)
-            .HasForeignKey(r => r.BuildingId)
-            .OnDelete(DeleteBehavior.Restrict);
+        .HasOne(r => r.Building)
+        .WithMany(b => b.Rooms)
+        .HasForeignKey(r => r.BuildingId)
+        .OnDelete(DeleteBehavior.Restrict);
 
-        // samme utstyr kan bare kobles til samme rom en gang
+        // The same equipment can only be linked to the same room once
         modelBuilder.Entity<RoomEquipment>()
             .HasIndex(re => new { re.RoomId, re.EquipmentId })
             .IsUnique();
         
+        // A building cannot have two rooms with the same name
         modelBuilder.Entity<Room>()
             .HasIndex(r => new { r.BuildingId, r.Name })
             .IsUnique();
@@ -83,9 +83,6 @@ public class BookingDbContext : IdentityDbContext
             .WithMany()
             .HasForeignKey(m => m.UserId)
             .OnDelete(DeleteBehavior.Restrict);
-
-
     }
 
 }
-
